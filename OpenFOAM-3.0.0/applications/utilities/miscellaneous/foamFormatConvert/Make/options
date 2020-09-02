@@ -1,0 +1,11 @@
+EXE_INC = \
+    -I$(LIB_SRC)/finiteVolume/lnInclude \
+    -I$(LIB_SRC)/meshTools/lnInclude \
+    -I$(LIB_SRC)/lagrangian/basic/lnInclude
+
+EXE_LIBS = \
+    -lmeshTools \
+    -lfiniteVolume \
+    -lgenericPatchFields \
+    -llagrangian
+EXE_LIBS_NEW = -lmeshTools -lfiniteVolume -lgenericPatchFields -llagrangian -ltriSurface -lfileFormats -lsurfMesh

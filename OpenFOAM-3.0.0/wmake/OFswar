@@ -1,0 +1,31 @@
+#/bin/bash
+#set -x
+
+AR=swar
+if [ $# -eq 0 ]; then
+    exit 1
+fi
+cur_path=$PWD
+wmake_path=${WM_PROJECT_DIR}/wmake
+if [ -d ${wmake_path} ]; then
+    cd ${wmake_path}
+else
+    echo "Error: subdir ${wmake_path} does not exist!"
+	exit 1
+fi
+OBJECT="`echo $* | sed 's/.*lib\(.*\)\.a.*/\1/'`"
+TMPDIR=".tmpLIB"
+if [ ! -d ${TMPDIR} ]; then
+    mkdir ${TMPDIR}
+fi
+cd ${TMPDIR}
+LIBS=`echo $* | sed 's/  */\n/g' | grep '\-l[^ ]*' | \
+     sed 's/\-l\(.*\)/\1/g' | xargs`
+LINK_STRING=`echo $* | sed 's/  */\n/g' | grep -v '\-l[^ ]*' | \
+     grep -v '\-\-[^ ]*' | grep -v '\-L[^ ]*' |  xargs`
+LIBS_ARR=(${LIBS})
+length=${#LIBS_ARR[@]}
+echo ${LIBS} > ${OBJECT}
+
+cd ${cur_path}
+${AR} ${LINK_STRING}

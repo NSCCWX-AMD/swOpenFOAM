@@ -1,0 +1,11 @@
+EXE_INC = \
+    -I$(LIB_SRC)/transportModels \
+    -I$(LIB_SRC)/finiteVolume/lnInclude \
+    -I$(LIB_SRC)/meshTools/lnInclude
+
+EXE_LIBS = \
+    -lgenericPatchFields \
+    -lincompressibleTransportModels \
+    -lfiniteVolume \
+    -lmeshTools
+EXE_LIBS_NEW = -lgenericPatchFields -lincompressibleTransportModels -lfiniteVolume -lmeshTools -ltwoPhaseMixture -ltriSurface -lfileFormats -lsurfMesh

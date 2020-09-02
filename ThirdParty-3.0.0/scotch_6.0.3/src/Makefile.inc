@@ -1,0 +1,1 @@
+../../etc/wmakeFiles/scotch/Makefile.inc.sw26010_hpc_linux2.shlib-OpenFOAM-64Int64

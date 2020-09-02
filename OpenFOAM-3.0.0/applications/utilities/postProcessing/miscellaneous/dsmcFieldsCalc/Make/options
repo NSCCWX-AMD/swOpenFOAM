@@ -1,0 +1,16 @@
+EXE_INC = \
+    -I$(LIB_SRC)/postProcessing/postCalc \
+    -I$(LIB_SRC)/finiteVolume/lnInclude \
+    -I$(LIB_SRC)/lagrangian/basic/lnInclude \
+    -I$(LIB_SRC)/postProcessing/functionObjects/utilities/lnInclude \
+    -I$(LIB_SRC)/lagrangian/DSMC/lnInclude \
+    -I$(LIB_SRC)/meshTools/lnInclude
+
+EXE_LIBS = \
+    ${FOAM_LIBBIN}/postCalc.o \
+    -lmeshTools \
+    -lfiniteVolume \
+    -lutilityFunctionObjects \
+    -llagrangian \
+    -lDSMC
+EXE_LIBS_NEW = -lpostCalc -lmeshTools -lfiniteVolume -lutilityFunctionObjects -llagrangian -lDSMC -ltriSurface -lfileFormats -lsurfMesh -lfvOptions -lsampling -lconversion -lturbulenceModels -lcompressibleTurbulenceModels -lcompressibleTransportModels -lfluidThermophysicalModels -lsolidThermo -lspecie -lsolidSpecie -lreactionThermophysicalModels -lincompressibleTurbulenceModels -lincompressibleTransportModels -ltwoPhaseMixture

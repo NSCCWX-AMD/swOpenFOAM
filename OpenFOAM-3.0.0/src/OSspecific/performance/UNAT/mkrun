@@ -1,0 +1,2 @@
+make
+(cd ../.. && rm -f ./mbt && sh mkrun)

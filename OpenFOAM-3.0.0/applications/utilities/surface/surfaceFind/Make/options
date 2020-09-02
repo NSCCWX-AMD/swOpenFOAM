@@ -1,0 +1,7 @@
+EXE_INC = \
+    -I$(LIB_SRC)/surfMesh/lnInclude
+
+EXE_LIBS = \
+    -lmeshTools \
+    -lsurfMesh
+EXE_LIBS_NEW = -lmeshTools -lsurfMesh -ltriSurface -lfileFormats

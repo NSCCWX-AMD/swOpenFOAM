@@ -1,0 +1,6 @@
+#!/bin/sh
+
+wmUNSET 2>/dev/null
+rm -f etc/bashrc
+cp etc/bashrc-compile -f etc/bashrc
+source etc/bashrc

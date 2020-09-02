@@ -1,0 +1,917 @@
+#include "stdio.h"
+#include "stdlib.h"
+#include "math.h"
+#include "../cps_sw_unit.h"
+#include "MeshInfo.hpp"
+
+#define create_array( name , size)\
+scalar* name; \
+name = (scalar*) malloc( sizeof(scalar)*(size) );
+
+#define max(x, y) ((x)>=(y) ? (x) : (y))
+#define min(x, y) ((x)<(y) ? (x) : (y))
+
+extern "C" 
+{
+void paraStdOut(const char* format, ...);
+}
+
+enum CVSCHEME
+{
+	UDS = 0,
+	CDS,
+	CDS2,
+	LUDS
+};
+
+enum VISTYPE
+{
+	normal = 0,
+	thermal,
+	reaction
+};
+
+
+extern "C" 
+{
+void cal_scalar_merge5_(
+	// outputs
+	scalar* su, scalar* rface_1, scalar* rface_2,
+	// input fields
+	scalar* mf, scalar* phi, 
+	scalar* gradPhi, scalar* vis, 
+	// convection schemes parameters
+	label* convScheme, scalar* GammaBlend, scalar* faceCenterCorrection, 
+	// viscosity parameters and fields
+	label* visType, scalar* cp, scalar* den,
+	scalar* lambda, scalar* sigma, scalar* vislam, scalar* PrScNr, scalar* diffusivity_gas );
+
+void cal_scalar_merge4_(
+	// outputs
+	scalar* su, scalar* rface_1, scalar* rface_2,
+	// input fields
+	scalar* mf, scalar* phi, 
+	scalar* gradPhi, scalar* vis, 
+	// convection schemes parameters
+	label* convScheme, scalar* GammaBlend, scalar* faceCenterCorrection, 
+	// viscosity parameters and fields
+	label* visType, scalar* cp, scalar* den,
+	scalar* lambda, scalar* sigma, scalar* vislam, scalar* PrScNr, scalar* diffusivity_gas );
+
+void cal_scalar_separate_(
+	// outputs
+	scalar* su, scalar* rface_1, scalar* rface_2,
+	// input fields
+	scalar* mf, scalar* phi, 
+	scalar* gradPhi, scalar* vis, 
+	// convection schemes parameters
+	label* convScheme, scalar* GammaBlend, scalar* faceCenterCorrection, 
+	// viscosity parameters and fields
+	label* visType, scalar* cp, scalar* den,
+	scalar* lambda, scalar* sigma, scalar* vislam, scalar* PrScNr, scalar* diffusivity_gas );
+
+void cal_scalar_separate_luds_(
+	// outputs
+	scalar* su, scalar* rface_1, scalar* rface_2,
+	// input fields
+	scalar* mf, scalar* phi, 
+	scalar* gradPhi, scalar* vis, 
+	// convection schemes parameters
+	label* convScheme, scalar* GammaBlend, scalar* faceCenterCorrection, 
+	// viscosity parameters and fields
+	label* visType, scalar* cp, scalar* den,
+	scalar* lambda, scalar* sigma, scalar* vislam, scalar* PrScNr, scalar* diffusivity_gas );
+}
+
+void cal_scalar_merge5_(
+	// outputs
+	scalar* su, scalar* rface_1, scalar* rface_2,
+	// input fields
+	scalar* mf, scalar* phi, 
+	scalar* gradPhi, scalar* vis, 
+	// convection schemes parameters
+	label* convScheme, scalar* GammaBlend, scalar* faceCenterCorrection, 
+	// viscosity parameters and fields
+	label* visType, scalar* cp, scalar* den,
+	scalar* lambda, scalar* sigma, scalar* vislam, scalar* PrScNr, scalar* diffusivity_gas )
+{
+	// merge version just suitable for normal viscosity and LUDS scheme
+	if( *visType != normal || *convScheme != LUDS)
+	{
+		printf("Error: in merge 5 not supported, Exiting!\n");
+		printf("visType = %d, convScheme = %d\n", *visType, *convScheme);
+		exit(-1);
+	}
+
+	// get mesh constant fields
+	const label nCell = getCellNum();
+	const label nFace = getFaceNum();
+	const label nBndr = getBndrNum();
+	const label* ip = getOwn();
+	const label* in = getNei();
+	const scalar* face_lam = getWei();
+	const scalar* cell_x = getCellX();
+	const scalar* face_x = getFaceX();
+	const scalar* face_D = getFaceD();
+	const scalar* face_n = getFaceN();
+
+	// seperate 3D arrays
+	scalar* gradPhi0 = &gradPhi[0]; 
+	scalar* gradPhi1 = &gradPhi[nCell+nBndr]; 
+	scalar* gradPhi2 = &gradPhi[2*(nCell+nBndr)];
+	const scalar* cell_x0 = &cell_x[0];	
+	const scalar* cell_x1 = &cell_x[nCell];	
+	const scalar* cell_x2 = &cell_x[2*nCell];	
+	const scalar* face_x0 = &face_x[0];	
+	const scalar* face_x1 = &face_x[nFace];	
+	const scalar* face_x2 = &face_x[2*nFace];
+	const scalar* face_n0 = &face_n[0];
+	const scalar* face_n1 = &face_n[nFace];
+	const scalar* face_n2 = &face_n[2*nFace];
+
+	// constants
+	scalar csBlend = *GammaBlend;
+	scalar csFaceCorrect = *faceCenterCorrection;
+	scalar vis_lambda = *lambda; 
+	scalar vis_sigma = *sigma;
+	scalar vis_lam = *vislam;
+	scalar vis_PrScNr = *PrScNr;
+	scalar vis_diffuse = *diffusivity_gas;
+
+	label iface;
+	/******** loops cache: in, ip, mf ********/
+	// loop1
+	create_array(XacU0, nFace);
+	for(iface = 0; iface < nFace; iface++ )
+	{
+		if(mf[iface] >= 0.0)
+			XacU0[iface] =  cell_x0[ip[iface]];
+		else
+			XacU0[iface] =  cell_x0[in[iface]];
+		XacU0[iface] = face_x0[iface] - XacU0[iface];
+	}
+	// loop2
+	create_array(XacU1, nFace);
+	for(iface = 0; iface < nFace; iface++ )
+	{
+		if(mf[iface] >= 0.0)
+			XacU1[iface] =  cell_x1[ip[iface]];
+		else
+			XacU1[iface] =  cell_x1[in[iface]];
+		XacU1[iface] = face_x1[iface] - XacU1[iface];
+	}
+	// loop3
+	create_array(XacU2, nFace);
+	for(iface = 0; iface < nFace; iface++ )
+	{
+		if(mf[iface] >= 0.0)
+			XacU2[iface] =  cell_x2[ip[iface]];
+		else
+			XacU2[iface] =  cell_x2[in[iface]];
+		XacU2[iface] = face_x2[iface] - XacU2[iface];
+	}
+	// loop4
+	create_array(phiDelta, nFace);
+	for(iface = 0; iface < nFace; iface++ )
+	{
+		if(mf[iface] >= 0.0)
+			phiDelta[iface] = gradPhi0[ip[iface]] * XacU0[iface];
+		else
+			phiDelta[iface] = gradPhi0[in[iface]] * XacU0[iface];	  
+	}		
+	// loop5
+	for(iface = 0; iface < nFace; iface++ )
+	{
+		if(mf[iface] >= 0.0)
+			phiDelta[iface] += gradPhi1[ip[iface]] * XacU1[iface];
+		else
+			phiDelta[iface] += gradPhi1[in[iface]] * XacU1[iface];	  
+	}		
+	// loop6
+	for(iface = 0; iface < nFace; iface++ )
+	{
+		if(mf[iface] >= 0.0)
+			phiDelta[iface] += gradPhi2[ip[iface]] * XacU2[iface];
+		else
+			phiDelta[iface] += gradPhi2[in[iface]] * XacU2[iface];	  
+	}		
+	free(XacU0); free(XacU1); free(XacU2);
+	// loop7
+	for(iface = 0; iface < nFace; iface++ )
+	{
+		scalar phiUDS;
+		if( mf[iface] >= 0.0 )
+			phiUDS = phi[ip[iface]];
+		else
+			phiUDS = phi[in[iface]];
+		// implicit UDS
+		scalar fci = min( mf[iface] , 0.0 ) * phi[in[iface]]
+			+ max( mf[iface] , 0.0 ) * phi[ip[iface]];
+		// explicit LUDS
+		scalar fce = mf[iface] * ( phiUDS + phiDelta[iface] );
+		// blend constant needed	
+		scalar blend = csBlend * ( fce - fci );
+		su[ip[iface]] -= blend;
+		su[in[iface]] += blend;
+	}
+	free(phiDelta);
+	/******** loops cache: ip, in, face_lam ********/
+	// loop8
+	create_array(visFace, nFace);
+	for(iface = 0; iface < nFace; iface++ )
+	{
+		scalar visac = face_lam[iface] * vis[in[iface]]
+			+(1.0-face_lam[iface]) * vis[ip[iface]];
+		// vis constants vis_lam, vis_PrScNr, vis_sigma needed
+		visac = vis_lam/vis_PrScNr 
+			+ ( visac - vis_lam) / vis_sigma;
+		visFace[iface] = visac * face_D[iface];
+	}
+	// loop9
+	create_array(visac, nFace)
+	for(iface = 0; iface < nFace; iface++ )
+	{
+		visac[iface] = face_lam[iface] * vis[in[iface]]
+			+(1.0-face_lam[iface]) * vis[ip[iface]];
+		// vis constants vis_lam, vis_PrScNr, vis_sigma needed
+		visac[iface] = vis_lam/vis_PrScNr
+					 + ( visac[iface] - vis_lam) / vis_sigma;
+	}
+	// loop10
+	create_array(dPhi, nFace);
+	for(iface = 0; iface < nFace; iface++ )
+	{
+		scalar xpn = cell_x0[in[iface]] - cell_x0[ip[iface]];
+		scalar dPhidXac = face_lam[iface] * gradPhi0[in[iface]] 
+			+(1.0-face_lam[iface]) * gradPhi0[ip[iface]];
+		dPhi[iface] = xpn * dPhidXac;
+	}
+	// loop11
+	for(iface = 0; iface < nFace; iface++ )
+	{
+		scalar xpn = cell_x1[in[iface]] - cell_x1[ip[iface]];
+		scalar dPhidXac = face_lam[iface] * gradPhi1[in[iface]] 
+			+(1.0-face_lam[iface]) * gradPhi1[ip[iface]];
+		dPhi[iface] += xpn * dPhidXac;
+	}
+	// loop12
+	for(iface = 0; iface < nFace; iface++ )
+	{
+		scalar xpn = cell_x2[in[iface]] - cell_x2[ip[iface]];
+		scalar dPhidXac = face_lam[iface] * gradPhi2[in[iface]] 
+			+(1.0-face_lam[iface]) * gradPhi2[ip[iface]];
+		dPhi[iface] += xpn * dPhidXac;
+	}
+	// loop13
+	create_array(dPhidFn, nFace);
+	for(iface = 0; iface < nFace; iface++ )
+	{
+		scalar dPhidXac = face_lam[iface] * gradPhi0[in[iface]] 
+			+(1.0-face_lam[iface]) * gradPhi0[ip[iface]];
+		dPhidFn[iface] = dPhidXac * face_n0[iface];
+	}
+	// loop14
+	for(iface = 0; iface < nFace; iface++ )
+	{
+		scalar dPhidXac = face_lam[iface] * gradPhi1[in[iface]] 
+			+(1.0-face_lam[iface]) * gradPhi1[ip[iface]];
+		dPhidFn[iface] += dPhidXac * face_n1[iface];
+	}
+	// loop15
+	for(iface = 0; iface < nFace; iface++ )
+	{
+		scalar dPhidXac = face_lam[iface] * gradPhi2[in[iface]] 
+			+(1.0-face_lam[iface]) * gradPhi2[ip[iface]];
+		dPhidFn[iface] += dPhidXac * face_n2[iface];
+	}
+	/************* loops reuse in ip su *************/
+	// loop16
+	for(iface = 0; iface < nFace; iface++ )
+	{
+		scalar fdi = visFace[iface] * dPhi[iface];
+		su[ip[iface]] -= fdi; 
+		su[in[iface]] += fdi; 
+	}
+	// loop17
+	for(iface = 0; iface < nFace; iface++ )
+	{
+		scalar fde = visac[iface] * dPhidFn[iface];
+		su[ip[iface]] += fde ; 
+		su[in[iface]] -= fde ; 
+	}
+	// rface loop
+	for(iface = 0; iface < nFace; iface++ )
+	{
+		rface_1[iface] = -visFace[iface] - max( mf[iface], 0.0);
+		rface_2[iface] = -visFace[iface] + min( mf[iface], 0.0);
+	}
+	free(dPhi); free(dPhidFn); free(visac); free(visFace);
+}
+
+// reusable interpolation operators 
+// declared here to be used in cal_scalar_merge4
+void faceInterpolateDirected( const label nFace, const label* ip, const label* in, 
+			const scalar* directions, const scalar* cellField, scalar* faceFeild);
+
+void faceInterpolateWeighted( const label nFace, const label* ip, const label* in, 
+			const scalar* weights, const scalar* cellField, scalar* faceFeild);
+
+void faceInterpolateWeightedSwap( const label nFace, const label* ip, const label* in, 
+			const scalar* weights, const scalar* cellField, scalar* faceFeild);
+
+void faceInterpolateConstant( const label nFace, const label* ip, const label* in, 
+			const scalar const_ip, const scalar const_in, 
+			const scalar* cellField, scalar* faceFeild);
+
+void cal_scalar_merge4_(
+	// outputs
+	scalar* su, scalar* rface_1, scalar* rface_2,
+	// input fields
+	scalar* mf, scalar* phi, 
+	scalar* gradPhi, scalar* vis, 
+	// convection schemes parameters
+	label* convScheme, scalar* GammaBlend, scalar* faceCenterCorrection, 
+	// viscosity parameters and fields
+	label* visType, scalar* cp, scalar* den,
+	scalar* lambda, scalar* sigma, scalar* vislam, scalar* PrScNr, scalar* diffusivity_gas )
+{
+	// merge version just suitable for normal viscosity and LUDS scheme
+	if( *visType != normal || *convScheme != LUDS )
+	{
+		printf("Error: in merge 4 not supported, Exiting!\n");
+		printf("visType = %d, convScheme = %d\n", *visType, *convScheme);
+		exit(-1);
+	}
+
+	// get mesh constant fields
+	const label nCell = getCellNum();
+	const label nFace = getFaceNum();
+	const label nBndr = getBndrNum();
+	const label* ip = getOwn();
+	const label* in = getNei();
+	const scalar* face_lam = getWei();
+	const scalar* cell_x = getCellX();
+	const scalar* face_x = getFaceX();
+	const scalar* face_D = getFaceD();
+	const scalar* face_n = getFaceN();
+
+	// seperate 3D arrays
+	scalar* gradPhi0 = &gradPhi[0]; 
+	scalar* gradPhi1 = &gradPhi[nCell+nBndr]; 
+	scalar* gradPhi2 = &gradPhi[2*(nCell+nBndr)];
+	const scalar* cell_x0 = &cell_x[0];	
+	const scalar* cell_x1 = &cell_x[nCell];	
+	const scalar* cell_x2 = &cell_x[2*nCell];	
+	const scalar* face_x0 = &face_x[0];	
+	const scalar* face_x1 = &face_x[nFace];	
+	const scalar* face_x2 = &face_x[2*nFace];
+	const scalar* face_n0 = &face_n[0];
+	const scalar* face_n1 = &face_n[nFace];
+	const scalar* face_n2 = &face_n[2*nFace];
+
+	// constants
+	scalar csBlend = *GammaBlend;
+	scalar csFaceCorrect = *faceCenterCorrection;
+	scalar vis_lambda = *lambda; 
+	scalar vis_sigma = *sigma;
+	scalar vis_lam = *vislam;
+	scalar vis_PrScNr = *PrScNr;
+	scalar vis_diffuse = *diffusivity_gas;
+
+	label iface;
+	/******** loops cache: in, ip, face_lam ********/
+	create_array(visac, nFace);
+	create_array(dPhidXac0, nFace);
+	create_array(dPhidXac1, nFace);
+	create_array(dPhidXac2, nFace);
+	// loop1
+	faceInterpolateWeightedSwap( nFace, ip, in,
+				face_lam, vis, visac);
+	// loop2
+	faceInterpolateWeightedSwap( nFace, ip, in,
+				face_lam, gradPhi0, dPhidXac0);
+	// loop3
+	faceInterpolateWeightedSwap( nFace, ip, in,
+				face_lam, gradPhi1, dPhidXac1);
+	// loop4
+	faceInterpolateWeightedSwap( nFace, ip, in,
+				face_lam, gradPhi2, dPhidXac2);
+	/********* loops cache: in ip mf **********/
+	create_array(XU0, nFace);	
+	create_array(XU1, nFace);	
+	create_array(XU2, nFace);	
+	create_array(dPhidXU0, nFace);
+	create_array(dPhidXU1, nFace);
+	create_array(dPhidXU2, nFace);
+	create_array(phiUDS, nFace);
+	// loop5
+	faceInterpolateDirected( nFace, ip, in,
+				mf, cell_x0, XU0);
+	// loop6
+	faceInterpolateDirected( nFace, ip, in,
+				mf, cell_x1, XU1);
+	// loop7
+	faceInterpolateDirected( nFace, ip, in,
+				mf, cell_x2, XU2);
+	// loop8
+	faceInterpolateDirected( nFace, ip, in,
+				mf, gradPhi0, dPhidXU0);
+	// loop9
+	faceInterpolateDirected( nFace, ip, in,
+				mf, gradPhi1, dPhidXU1);
+	// loop10
+	faceInterpolateDirected( nFace, ip, in,
+				mf, gradPhi2, dPhidXU2);
+	// loop11
+	faceInterpolateDirected( nFace, ip, in,
+				mf, phi, phiUDS);
+	/********** array loops reuse: phiDelta ************/
+	// loop12
+	create_array(phiDelta, nFace);
+	for(iface = 0; iface < nFace; iface++ )
+	{
+		phiDelta[iface] = (face_x0[iface] - XU0[iface]) * dPhidXU0[iface];
+	}
+	// loop13
+	for(iface = 0; iface < nFace; iface++ )
+	{
+		phiDelta[iface] += (face_x1[iface] - XU1[iface]) * dPhidXU1[iface];
+	}
+	// loop14
+	for(iface = 0; iface < nFace; iface++ )
+	{
+		phiDelta[iface] += (face_x2[iface] - XU2[iface]) * dPhidXU2[iface];
+	}
+	free(XU0); free(XU1); free(XU2); free(dPhidXU0); free(dPhidXU1); free(dPhidXU2);
+	/********** loops reuse: in ip dPhi ************/
+	// loop15
+	create_array(dPhi, nFace);
+	for( iface = 0; iface < nFace; iface++ )
+	{
+		dPhi[iface] = (cell_x0[in[iface]] - cell_x0[ip[iface]])
+			* dPhidXac0[iface];
+	}
+	// loop16
+	for(iface = 0; iface < nFace; iface++ )
+	{
+		dPhi[iface] += (cell_x1[in[iface]] - cell_x1[ip[iface]])
+			* dPhidXac1[iface];
+	}
+	// loop17
+	for(iface = 0; iface < nFace; iface++ )
+	{
+		dPhi[iface] += (cell_x2[in[iface]] - cell_x2[ip[iface]])
+			* dPhidXac2[iface];
+	}
+	/********* array loops reuse: visac fde **********/
+	// loop18
+	create_array(fde, nFace);
+	for(iface = 0; iface < nFace; iface++ )
+	{
+		// constants: vis_lam, vis_PrScNr, vis_sigma
+		visac[iface] = vis_lam/vis_PrScNr
+					 + ( visac[iface] - vis_lam) / vis_sigma;
+		fde[iface] = visac[iface] * face_n0[iface] * dPhidXac0[iface];
+	}
+	// loop19
+	for(iface = 0; iface < nFace; iface++ )
+	{
+		fde[iface] += visac[iface] * face_n1[iface] * dPhidXac1[iface];
+	}
+	// loop20
+	for(iface = 0; iface < nFace; iface++ )
+	{
+		fde[iface] += visac[iface] * face_n2[iface] * dPhidXac2[iface];
+	}
+	free(dPhidXac0); free(dPhidXac1); free(dPhidXac2);
+	/********** array loop ***********/
+	// loop21
+	create_array(fdi, nFace);
+	for(iface = 0; iface < nFace; iface++ )
+	{
+		fdi[iface] = visac[iface] * face_D[iface] * dPhi[iface]; 
+	}
+	free(dPhi);
+	/*********** loops reuse: Su **********/
+	// loop22
+	for(iface = 0; iface < nFace; iface++)
+	{
+		// use constant csBlend
+		scalar fce = mf[iface] * (phiUDS[iface] + phiDelta[iface]); //fce
+		scalar fci = mf[iface] * phiUDS[iface];//fci
+		scalar blend = csBlend * (fce -fci);
+		su[ip[iface]] -= blend;
+		su[in[iface]] += blend;
+	}
+	// loop23
+	for(iface = 0; iface < nFace; iface++)
+	{
+		su[ip[iface]] += fde[iface] - fdi[iface];
+		su[in[iface]] -= fde[iface] - fdi[iface];
+	}
+	// rface loop
+	for(iface = 0; iface < nFace; iface++ )
+	{
+		rface_1[iface] = -(visac[iface] * face_D[iface]) - max( mf[iface], 0.0);
+		rface_2[iface] = -(visac[iface] * face_D[iface]) + min( mf[iface], 0.0);
+	}
+	free(visac); free(phiUDS); free(phiDelta); free(fdi); free(fde); 
+}
+
+// reusable interpolation operators
+void faceInterpolateDirected( const label nFace, const label* ip, const label* in, 
+			const scalar* directions, const scalar* cellField, scalar* faceField)
+{
+	label iface;
+	for(iface = 0; iface < nFace; iface++)
+	{
+		if(directions[iface] >= 0.0 )
+			faceField[iface] = cellField[ip[iface]];
+		else
+			faceField[iface] = cellField[in[iface]];
+	}
+}
+
+void faceInterpolateWeighted( const label nFace, const label* ip, const label* in, 
+			const scalar* weights, const scalar* cellField, scalar* faceField)
+{
+	label iface;
+	for(iface = 0; iface < nFace; iface++)
+		faceField[iface] = weights[iface] * cellField[ip[iface]]
+			+ (1.0-weights[iface]) * cellField[in[iface]];
+}
+
+void faceInterpolateWeightedSwap( const label nFace, const label* ip, const label* in, 
+			const scalar* weights, const scalar* cellField, scalar* faceField)
+{
+	label iface;
+	for(iface = 0; iface < nFace; iface++)
+		faceField[iface] = weights[iface] * cellField[in[iface]]
+			+ (1.0-weights[iface]) * cellField[ip[iface]];
+}
+
+void faceInterpolateConstant( const label nFace, const label* ip, const label* in, 
+			const scalar const_ip, const scalar const_in, const scalar* cellField, scalar* faceField)
+{
+	label iface;
+	for(iface = 0; iface < nFace; iface++)
+		faceField[iface] = const_ip * cellField[ip[iface]]
+			+ const_in * cellField[in[iface]];
+}
+
+void cal_scalar_separate_(
+	// outputs
+	scalar* su, scalar* rface_1, scalar* rface_2,
+	// input fields
+	scalar* mf, scalar* phi, 
+	scalar* gradPhi, scalar* vis, 
+	// convection schemes parameters
+	label* convScheme, scalar* GammaBlend, scalar* faceCenterCorrection, 
+	// viscosity parameters and fields
+	label* visType, scalar* cp, scalar* den,
+	scalar* lambda, scalar* sigma, scalar* vislam, scalar* PrScNr, scalar* diffusivity_gas )
+{
+	// get mesh constant fields
+	const label nCell = getCellNum();
+	const label nFace = getFaceNum();
+	const label nBndr = getBndrNum();
+	const label* ip = getOwn();
+	const label* in = getNei();
+	const scalar* face_lam = getWei();
+	const scalar* cell_x = getCellX();
+	const scalar* face_x = getFaceX();
+	const scalar* face_D = getFaceD();
+	const scalar* face_n = getFaceN();
+
+	// seperate 3D arrays
+	scalar* gradPhi0 = &gradPhi[0]; 
+	scalar* gradPhi1 = &gradPhi[nCell+nBndr]; 
+	scalar* gradPhi2 = &gradPhi[2*(nCell+nBndr)];
+	const scalar* cell_x0 = &cell_x[0];	
+	const scalar* cell_x1 = &cell_x[nCell];	
+	const scalar* cell_x2 = &cell_x[2*nCell];	
+	const scalar* face_x0 = &face_x[0];	
+	const scalar* face_x1 = &face_x[nFace];	
+	const scalar* face_x2 = &face_x[2*nFace];
+	const scalar* face_n0 = &face_n[0];
+	const scalar* face_n1 = &face_n[nFace];
+	const scalar* face_n2 = &face_n[2*nFace];
+
+	// constants
+	scalar csBlend = *GammaBlend;
+	scalar csFaceCorrect = *faceCenterCorrection;
+	scalar vis_lambda = *lambda; 
+	scalar vis_sigma = *sigma;
+	scalar vis_lam = *vislam;
+	scalar vis_PrScNr = *PrScNr;
+	scalar vis_diffuse = *diffusivity_gas;
+
+	label cvScheme = *convScheme;
+	label vis_type = *visType;
+	
+	/*********************** interpolation **********************/
+	// interpolations with mf
+	create_array(phiUDS, nFace);
+	create_array(dPhidXU0, nFace);
+	create_array(dPhidXU1, nFace);
+	create_array(dPhidXU2, nFace);
+	create_array(XU0, nFace);
+	create_array(XU1, nFace);
+	create_array(XU2, nFace);
+	faceInterpolateDirected( nFace, ip, in,
+				mf, phi, phiUDS);
+	faceInterpolateDirected( nFace, ip, in,
+				mf, gradPhi0, dPhidXU0);
+	faceInterpolateDirected( nFace, ip, in,
+				mf, gradPhi1, dPhidXU1);
+	faceInterpolateDirected( nFace, ip, in,
+				mf, gradPhi2, dPhidXU2);
+	faceInterpolateDirected( nFace, ip, in,
+				mf, cell_x0, XU0);
+	faceInterpolateDirected( nFace, ip, in,
+				mf, cell_x1, XU1);
+	faceInterpolateDirected( nFace, ip, in,
+				mf, cell_x2, XU2);
+	// interpolations with face_lam
+	// reverse cp
+	create_array(rcp, nFace);
+	label iface;
+	for(iface = 0; iface < nFace; iface++)
+		rcp[iface] = 1.0/cp[iface];
+	create_array(dPhidXac0, nFace);
+	create_array(dPhidXac1, nFace);
+	create_array(dPhidXac2, nFace);
+	create_array(visac, nFace);
+	create_array(phiCDS, nFace);
+	create_array(Xac0, nFace);
+	create_array(Xac1, nFace);
+	create_array(Xac2, nFace);
+	create_array(rcpac, nFace);
+	create_array(denac, nFace);
+	faceInterpolateWeightedSwap( nFace, ip, in,
+				face_lam, gradPhi0, dPhidXac0);
+	faceInterpolateWeightedSwap( nFace, ip, in,
+				face_lam, gradPhi1, dPhidXac1);
+	faceInterpolateWeightedSwap( nFace, ip, in,
+				face_lam, gradPhi2, dPhidXac2);
+	faceInterpolateWeightedSwap( nFace, ip, in,
+				face_lam, vis, visac);
+	faceInterpolateWeightedSwap( nFace, ip, in,
+				face_lam, phi, phiCDS);
+	faceInterpolateWeightedSwap( nFace, ip, in,
+				face_lam, cell_x0, Xac0);
+	faceInterpolateWeightedSwap( nFace, ip, in,
+				face_lam, cell_x0, Xac1);
+	faceInterpolateWeightedSwap( nFace, ip, in,
+				face_lam, cell_x0, Xac2);
+	faceInterpolateWeightedSwap( nFace, ip, in,
+				face_lam, rcp, rcpac);
+	faceInterpolateWeightedSwap( nFace, ip, in,
+				face_lam, den, denac);
+	// interpolations with 1/2
+	create_array( phiCDS2, nFace);
+	faceInterpolateConstant( nFace, ip, in,
+				0.5, 0.5, phi, phiCDS2);
+	// interpolations with +1,-1
+	create_array( Xpn0 , nFace);
+	create_array( Xpn1 , nFace);
+	create_array( Xpn2 , nFace);
+	faceInterpolateConstant( nFace, ip, in,
+				-1.0, 1.0, cell_x0, Xpn0);
+	faceInterpolateConstant( nFace, ip, in,
+				-1.0, 1.0, cell_x1, Xpn1);
+	faceInterpolateConstant( nFace, ip, in,
+				-1.0, 1.0, cell_x2, Xpn2);
+	/*********************** face flux assemble **********************/
+	create_array(fu, nFace);
+	for(iface = 0; iface < nFace; iface++)
+	{
+		scalar fce;
+		if( cvScheme == UDS )
+			fce = mf[iface] * phiUDS[iface];
+		else if( cvScheme == CDS )
+		{
+			scalar phiDelta = (	face_x0[iface] - Xac0[iface] ) * dPhidXac0[iface] 
+							+ (	face_x1[iface] - Xac1[iface] ) * dPhidXac1[iface]
+							+ (	face_x2[iface] - Xac2[iface] ) * dPhidXac2[iface]; 
+			fce = mf[iface] * ( phiCDS[iface] + phiDelta * csFaceCorrect );
+		}
+		else if( cvScheme == CDS2 )
+			fce = mf[iface] * phiCDS2[iface];
+		else if( cvScheme == LUDS )
+		{
+			scalar phiDelta = (face_x0[iface] - XU0[iface]) * dPhidXU0[iface]
+					  +(face_x1[iface] - XU1[iface]) * dPhidXU1[iface]
+					  +(face_x2[iface] - XU2[iface]) * dPhidXU2[iface];
+			fce = mf[iface] * ( phiUDS[iface] + phiDelta );
+		}
+		else 
+		{
+			printf("Error: not supported convection scheme!\n");
+			exit(-1);
+		}
+
+		scalar fci = mf[iface] * phiUDS[iface];
+		scalar blend = csBlend * ( fce - fci );
+
+		if( vis_type == thermal )
+			visac[iface] = vis_lambda * rcpac[iface] 
+				+ ( visac[iface] - vis_lam ) / vis_sigma;
+		else if( vis_type == reaction )
+			visac[iface] = vis_diffuse * denac[iface]
+				+ ( visac[iface] - vis_lam ) / vis_sigma;
+		else 
+			visac[iface] = vis_lam/vis_PrScNr 
+				+ ( visac[iface] - vis_lam) / vis_sigma;
+
+		scalar fdi = visac[iface] * face_D[iface] * 
+				( dPhidXac0[iface] * Xpn0[iface]
+				+ dPhidXac1[iface] * Xpn1[iface] 
+				+ dPhidXac2[iface] * Xpn2[iface] );
+		scalar fde = visac[iface] *
+				( dPhidXac0[iface] * face_n0[iface]
+				+ dPhidXac1[iface] * face_n1[iface]
+				+ dPhidXac2[iface] * face_n2[iface] );
+
+		fu[iface] = - blend + fde - fdi;
+	}
+	// rface loop
+	for( iface = 0; iface < nFace; iface++)
+	{
+		rface_1[iface] = - ( visac[iface] * face_D[iface] ) 
+						  - max( mf[iface] , 0.0 );
+		rface_2[iface] = - ( visac[iface] * face_D[iface] ) 
+						   + min( mf[iface] , 0.0 );
+	}
+	/***********************  integration  **********************/
+	for(iface = 0; iface < nFace; iface++)
+	{
+		su[ip[iface]] += fu[iface];
+		su[in[iface]] -= fu[iface];
+	}
+
+	// free all tmp face arrays
+	free(phiUDS); 
+	free(dPhidXU0); free(dPhidXU1); free(dPhidXU2); 
+	free(XU0); free(XU1); free(XU2); 
+	free(rcp); 
+	free(dPhidXac0); free(dPhidXac1); free(dPhidXac2);
+	free(visac); free(phiCDS);
+	free(Xac0); free(Xac1); free(Xac2); 
+	free(rcpac); free(denac); free( phiCDS2);
+	free( Xpn0 ); free( Xpn1 ); free( Xpn2 ); free(fu); 
+}
+
+void cal_scalar_separate_luds_(
+	// outputs
+	scalar* su, scalar* rface_1, scalar* rface_2,
+	// input fields
+	scalar* mf, scalar* phi, 
+	scalar* gradPhi, scalar* vis, 
+	// convection schemes parameters
+	label* convScheme, scalar* GammaBlend, scalar* faceCenterCorrection, 
+	// viscosity parameters and fields
+	label* visType, scalar* cp, scalar* den,
+	scalar* lambda, scalar* sigma, scalar* vislam, scalar* PrScNr, scalar* diffusivity_gas )
+{
+	// get mesh constant fields
+	const label nCell = getCellNum();
+	const label nFace = getFaceNum();
+	const label nBndr = getBndrNum();
+	const label* ip = getOwn();
+	const label* in = getNei();
+	const scalar* face_lam = getWei();
+	const scalar* cell_x = getCellX();
+	const scalar* face_x = getFaceX();
+	const scalar* face_D = getFaceD();
+	const scalar* face_n = getFaceN();
+
+	// seperate 3D arrays
+	scalar* gradPhi0 = &gradPhi[0]; 
+	scalar* gradPhi1 = &gradPhi[nCell+nBndr]; 
+	scalar* gradPhi2 = &gradPhi[2*(nCell+nBndr)];
+	const scalar* cell_x0 = &cell_x[0];	
+	const scalar* cell_x1 = &cell_x[nCell];	
+	const scalar* cell_x2 = &cell_x[2*nCell];	
+	const scalar* face_x0 = &face_x[0];	
+	const scalar* face_x1 = &face_x[nFace];	
+	const scalar* face_x2 = &face_x[2*nFace];
+	const scalar* face_n0 = &face_n[0];
+	const scalar* face_n1 = &face_n[nFace];
+	const scalar* face_n2 = &face_n[2*nFace];
+
+	// constants
+	scalar csBlend = *GammaBlend;
+	scalar csFaceCorrect = *faceCenterCorrection;
+	scalar vis_lambda = *lambda; 
+	scalar vis_sigma = *sigma;
+	scalar vis_lam = *vislam;
+	scalar vis_PrScNr = *PrScNr;
+	scalar vis_diffuse = *diffusivity_gas;
+
+	label cvScheme = *convScheme;
+	label vis_type = *visType;
+	
+	/*********************** interpolation **********************/
+	// interpolations with mf
+	create_array(phiUDS, nFace);
+	create_array(dPhidXU0, nFace);
+	create_array(dPhidXU1, nFace);
+	create_array(dPhidXU2, nFace);
+	create_array(XU0, nFace);
+	create_array(XU1, nFace);
+	create_array(XU2, nFace);
+	faceInterpolateDirected( nFace, ip, in,
+				mf, phi, phiUDS);
+	faceInterpolateDirected( nFace, ip, in,
+				mf, gradPhi0, dPhidXU0);
+	faceInterpolateDirected( nFace, ip, in,
+				mf, gradPhi1, dPhidXU1);
+	faceInterpolateDirected( nFace, ip, in,
+				mf, gradPhi2, dPhidXU2);
+	faceInterpolateDirected( nFace, ip, in,
+				mf, cell_x0, XU0);
+	faceInterpolateDirected( nFace, ip, in,
+				mf, cell_x1, XU1);
+	faceInterpolateDirected( nFace, ip, in,
+				mf, cell_x2, XU2);
+	// interpolations with face_lam
+	// reverse cp
+	create_array(dPhidXac0, nFace);
+	create_array(dPhidXac1, nFace);
+	create_array(dPhidXac2, nFace);
+	create_array(visac, nFace);
+	faceInterpolateWeightedSwap( nFace, ip, in,
+				face_lam, gradPhi0, dPhidXac0);
+	faceInterpolateWeightedSwap( nFace, ip, in,
+				face_lam, gradPhi1, dPhidXac1);
+	faceInterpolateWeightedSwap( nFace, ip, in,
+				face_lam, gradPhi2, dPhidXac2);
+	faceInterpolateWeightedSwap( nFace, ip, in,
+				face_lam, vis, visac);
+	// interpolations with 1/2
+	// interpolations with +1,-1
+	create_array( Xpn0 , nFace);
+	create_array( Xpn1 , nFace);
+	create_array( Xpn2 , nFace);
+	faceInterpolateConstant( nFace, ip, in,
+				-1.0, 1.0, cell_x0, Xpn0);
+	faceInterpolateConstant( nFace, ip, in,
+				-1.0, 1.0, cell_x1, Xpn1);
+	faceInterpolateConstant( nFace, ip, in,
+				-1.0, 1.0, cell_x2, Xpn2);
+	/*********************** face flux assemble **********************/
+	label iface;
+	create_array(fu, nFace);
+	for(iface = 0; iface < nFace; iface++)
+	{
+		scalar fce;
+		scalar phiDelta = (face_x0[iface] - XU0[iface]) * dPhidXU0[iface]
+				  +(face_x1[iface] - XU1[iface]) * dPhidXU1[iface]
+				  +(face_x2[iface] - XU2[iface]) * dPhidXU2[iface];
+		fce = mf[iface] * ( phiUDS[iface] + phiDelta );
+
+		scalar fci = mf[iface] * phiUDS[iface];
+		scalar blend = csBlend * ( fce - fci );
+
+		visac[iface] = vis_lam/vis_PrScNr 
+				+ ( visac[iface] - vis_lam) / vis_sigma;
+
+		scalar fdi = visac[iface] * face_D[iface] * 
+				( dPhidXac0[iface] * Xpn0[iface]
+				+ dPhidXac1[iface] * Xpn1[iface] 
+				+ dPhidXac2[iface] * Xpn2[iface] );
+		scalar fde = visac[iface] *
+				( dPhidXac0[iface] * face_n0[iface]
+				+ dPhidXac1[iface] * face_n1[iface]
+				+ dPhidXac2[iface] * face_n2[iface] );
+
+		fu[iface] = - blend + fde - fdi;
+	}
+	// rface loop
+	for( iface = 0; iface < nFace; iface++)
+	{
+		rface_1[iface] = - ( visac[iface] * face_D[iface] ) 
+						  - max( mf[iface] , 0.0 );
+		rface_2[iface] = - ( visac[iface] * face_D[iface] ) 
+						   + min( mf[iface] , 0.0 );
+	}
+	/***********************  integration  **********************/
+	for(iface = 0; iface < nFace; iface++)
+	{
+		su[ip[iface]] += fu[iface];
+		su[in[iface]] -= fu[iface];
+	}
+
+	// free all tmp face arrays
+	free(phiUDS); 
+	free(dPhidXU0); free(dPhidXU1); free(dPhidXU2); 
+	free(XU0); free(XU1); free(XU2); 
+	free(dPhidXac0); free(dPhidXac1); free(dPhidXac2);
+	free(visac);
+	free( Xpn0 ); free( Xpn1 ); free( Xpn2 ); free(fu); 
+}
+
+#undef min
+#undef max
+#undef create_array

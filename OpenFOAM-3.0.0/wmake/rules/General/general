@@ -1,0 +1,15 @@
+#-------------------------------*- makefile -*---------------------------------
+
+AR         = OFswar
+ARFLAGS    = cr
+RANLIB     = swranlib
+CPP        = cpp
+LD         = swld
+
+GFLAGS     = -fPIC -D$(WM_ARCH) -DWM_ARCH_OPTION=$(WM_ARCH_OPTION) \
+             -DWM_$(WM_PRECISION_OPTION) -DWM_LABEL_SIZE=$(WM_LABEL_SIZE)
+GINC       =
+GLIBS      = -lm -lmetis
+GLIB_LIBS  =
+
+#------------------------------------------------------------------------------

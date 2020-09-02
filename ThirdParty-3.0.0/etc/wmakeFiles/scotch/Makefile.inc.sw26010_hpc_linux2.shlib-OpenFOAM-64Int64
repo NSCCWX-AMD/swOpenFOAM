@@ -1,0 +1,26 @@
+EXE		=
+LIB		= .a
+OBJ		= .o
+
+MAKE		= make
+AR		= swar
+#ARFLAGS		= -shared -o
+ARFLAGS		= -cru -o
+CAT		= cat
+CCS		= sw5cc -host
+CCP		= mpicc
+#CCD	 = mpicc
+# CCD is used for build tools for compilation, should be local ones
+CCD		= $(WM_CC) -I/usr/sw-mpp/mpi2/include/
+#CFLAGS		= -O3 -fPIC -DINTSIZE64 -DCOMMON_FILE_COMPRESS_GZ -DCOMMON_RANDOM_FIXED_SEED -DSCOTCH_RENAME -Drestrict=__restrict
+CFLAGS		= -O3 -fPIC -DINTSIZE32 -DCOMMON_FILE_COMPRESS_GZ -DCOMMON_RANDOM_FIXED_SEED -DSCOTCH_RENAME -Drestrict=__restrict
+CLIBFLAGS	= -shared -fPIC
+#LDFLAGS		= -Xlinker --no-as-needed -lz -lm -lrt
+LDFLAGS		= -lz -lm -lrt
+CP		= cp
+LEX		= flex -Pscotchyy -olex.yy.c
+LN		= ln
+MKDIR		= mkdir
+MV		= mv
+RANLIB		= echo
+YACC		= bison -pscotchyy -y -b y

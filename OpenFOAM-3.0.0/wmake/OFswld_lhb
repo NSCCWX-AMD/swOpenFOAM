@@ -1,0 +1,209 @@
+#!/bin/bash
+
+LIBS_STRING=
+LD="swld453 -static"
+LINK_FLAG_FLAG= # empty or -Wl
+OFLIB_PAT=${FOAM_LIBBIN}
+EXTLIB_PATH=${FOAM_EXT_LIBBIN}
+DEBUG=false
+TMPDIR=${WM_PROJECT_DIR}/wmake/.tmpLIB
+CURRPATH=`pwd`
+
+if [ -d ${TMPDIR} ]; then
+    cd ${TMPDIR}
+else
+    echoDebug "Error: subdir ${TMPDIR} does not exist!"
+	exit 1
+fi
+
+echoDebug()
+{
+	if ${DEBUG}; then
+	    echo $*
+	else
+	    echo '' >/dev/null
+	fi
+}
+
+#find the dependent library for the specific library
+findLib()
+{
+	local length=0
+	LASTLIB=0
+#	printf "test"
+#    echoDebug $#
+    local TMPLIB=`find ${TMPDIR} -name $1`
+    if [ -z ${TMPLIB} ]; then
+		LIBS_STRING=0
+		echo ${LIBS_STRING}
+#        echoDebug "Error: the dependency library $1 has not been recorded!"
+	    exit 0
+    fi
+    for tmp in `cat $TMPLIB`
+    do
+#	    echoDebug $tmp
+        LIBS_STRING[$length]=$tmp
+	    ((length++));
+    done
+	echo ${LIBS_STRING[*]}
+}
+
+#determine whether the specific library has been added to the OFLIBS
+findRepeat()
+{
+	local LOCALNUM=${#OFLIBS[@]}
+    local i=0
+	for ((i=0; i<${LOCALNUM}; i++))
+	do
+	    if [ "$1" == "${OFLIBS[i]}" ]; then
+		    return 1
+		fi
+	done
+	return 0
+}
+
+#insert the specific library to the OFLIBS
+insertLib()
+{
+    local TMPLIBS=(`findLib $1`)
+	local i=0
+#	local LOCALNUM=${#OFLIBS[@]}
+	local length=${#TMPLIBS[@]}
+	echoDebug  "Library $* has these libs: ${TMPLIBS[*]}"
+	echoDebug ${length}
+    if [ "${TMPLIBS}" == "0" ]; then
+#	    NON_OFLIBS=(${NON_OFLIBS[*]} $1)
+		return 0
+	fi
+	if [ ${length} -eq 0 ]; then
+#	    echoDebug ${LOCALNUM}
+	    echoDebug "This is the last library"
+        return 0
+	fi
+    for ((i=0; i<length; i++))
+    do
+#	    echoDebug "$1:$i,$length"
+	    findRepeat ${TMPLIBS[i]}
+	    if [ $? -eq 0 ]; then
+#	        echoDebug "insert" ${TMPLIBS[i]}
+        	local LOCALNUM=${#OFLIBS[@]}
+	        OFLIBS[${LOCALNUM}]=${TMPLIBS[i]}
+#     		((LOCALNUM++));
+#			echoDebug "LIBSNUM="${LIBSNUM}
+     		echoDebug "Current LIBS: ${OFLIBS[*]}"
+            insertLib ${TMPLIBS[i]}
+		else
+		    continue
+    	fi
+    done
+#	echoDebug ${LOCALNUM}
+}
+
+LIBS_NO_PATH=`echo $* | sed 's/  */\n/g' | grep '\-l[^ ]*' | \
+			 sed 's/\-l\(.*\)/\1/g' | xargs`
+LIBS_HAVE_PATH=`echo $* | sed 's/  */\n/g' | grep '\(.*\)lib[^\/]*\.a' | xargs`
+LIBS_NO_PATH_ARR=(${LIBS_NO_PATH})
+LIBS_HAVE_PATH_ARR=(${LIBS_HAVE_PATH})
+LINK_STRING=`echo $* | sed 's/  */\n/g' | grep -v '\-l[^ ]*' | \
+			grep -v '\(.*\)lib[^\/]*\.a' | xargs`
+TARGET_EXT=`echo $* | sed 's/.*\-o  *\([^ ]*\)  *.*/\1/'`
+
+
+OFLIBS=()
+NON_OFLIBS=()
+length=${#LIBS_NO_PATH_ARR[@]}
+for ((i=0; i<length; i++))
+do
+    TMPLIBS=(`findLib ${LIBS_NO_PATH_ARR[i]}`)
+	len=${#TMPLIBS[@]}
+    if [ "${TMPLIBS}" == "0" ]; then
+	    NON_OFLIBS=(${NON_OFLIBS[*]} `echo ${LIBS_NO_PATH_ARR[i]} | \
+					sed 's/\([^\/]*\)/\-l\1/g'`)
+	else
+	    findRepeat ${LIBS_NO_PATH_ARR[i]}
+	    if [ $? -eq 0 ]; then
+	        OFLIBS=(${OFLIBS[*]} ${LIBS_NO_PATH_ARR[i]})
+     		insertLib ${OFLIBS[${#OFLIBS[@]}-1]}
+		fi
+#	    OFLIBS[$i]=${LIBS_NO_PATH_ARR[i]}
+	fi
+done
+
+LINKLIBS=`echo ${OFLIBS[*]} | sed 's/  */\n/g' | sed 's/\(.*\)/-l\1/g'`
+
+LINK_STRING="$LD ${LINK_STRING} ${LINK_FLAG_FLAG}--whole-archive \
+			 ${LINKLIBS[*]} ${LINK_FLAG_FLAG}--no-whole-archive ${NON_OFLIBS[*]}"
+echo ${LINK_STRING}
+cd ${CURRPATH}
+`${LINK_STRING}`
+#echoDebug ${LINKLIBS[*]}
+#echo ${NON_OFLIBS[*]}
+
+#length=${#LIBS_HAVE_PATH_ARR[@]}
+#for ((i=0; i<length; i++))
+#do
+#	PATHTMP=`echoDebug ${LIBS_HAVE_PATH_ARR[i]} | sed 's/\([^ ]*\)lib[^\/]*\.a/\1\/\./'`
+#	LIBTMP=`echoDebug ${LIBS_HAVE_PATH_ARR[i]} | sed 's/[^ ]*\(lib[^\/]*\.a\)/\1/'`
+#	PATHTMP=`cd ${PATHTMP};pwd`
+#	if [ -n "`findNoPathLib ${LIBTMP}`" ]; then
+#		OFLIBS=(${OFLIBS[*]} ${PATHTMP}/${LIBTMP})
+#	else
+#		NON_OFLIBS=(${NON_OFLIBS[*]} ${LIBS_NO_PATH_ARR[i]})
+#	fi
+#done
+
+#LIBSNUM=$#
+#for var in $*
+#do 
+#    echoDebug $var
+#    if [ ! -e $var ]; then
+#        echoDebug "Error: library $* has not been recorded!"
+#	    exit 1
+#    fi
+#	insertLib $var
+#done
+##insertLib $*
+#echoDebug ${OFLIBS[*]}
+#length=${#OFLIBS[@]}
+#echoDebug ${length}
+#for ((i=0; i<length; i++))
+#do
+#	if [ `insertLib ${TMPLIBS[i]}` -eq 1 ]; then
+#	    echoDebug "insert"
+#	    OFLIBS[$LIBSNUM]=${TMPLIBS[i]}
+#		echoDebug ${OFLIBS[*]}
+#		((LIBSNUM++));
+#	fi
+#done
+#echoDebug ${length}
+#for ((i=0; i<length; i++))
+#do
+#    echoDebug ${OFLIBS[i]}
+#    echoDebug `insertLib ${OFLIBS[i]}`
+#done
+
+#AR=swar
+#if [ $# -eq 0 ]; then
+#    exit 1
+#fi
+#cur_path=$PWD
+#wmake_path=${WM_PROJECT_DIR}/wmake
+#if [ -d ${wmake_path} ]; then
+#    cd ${wmake_path}
+#else
+#    echoDebug "Error: subdir ${wmake_path} does not exist!"
+#	exit 1
+#fi
+#OBJECT="`echoDebug $* | sed 's/.*lib\(.*\)\.a.*/\1/'`"
+#TMPDIR=".tmpLIB"
+#if [ ! -d ${TMPDIR} ]; then
+#    mkdir ${TMPDIR}
+#fi
+#cd ${TMPDIR}
+#LIBS=`echoDebug $* | sed 's/  */\n/g' | grep '\-l[^ ]*' | \
+#     sed 's/\-l\(.*\)/\1/g' | xargs`
+#LINK_STRING=`echoDebug $* | sed 's/  */\n/g' | grep -v '\-l[^ ]*' | xargs`
+#LIBS_ARR=(${LIBS})
+#length=${#LIBS_ARR[@]}
+#echoDebug ${LIBS} > ${OBJECT}
+#${AR} ${LINK_STRING}

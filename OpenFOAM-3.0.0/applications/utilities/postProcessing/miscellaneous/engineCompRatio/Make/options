@@ -1,0 +1,11 @@
+EXE_INC = \
+    -I$(LIB_SRC)/finiteVolume/lnInclude \
+    -I$(LIB_SRC)/engine/lnInclude \
+    -I$(LIB_SRC)/meshTools/lnInclude
+
+EXE_LIBS = \
+    -lengine \
+    -ldynamicMesh \
+    -lfiniteVolume \
+    -lmeshTools
+EXE_LIBS_NEW = -lengine -ldynamicMesh -lfiniteVolume -lmeshTools -lfvMotionSolvers -ltriSurface -lfileFormats -lsurfMesh -lextrudeModel

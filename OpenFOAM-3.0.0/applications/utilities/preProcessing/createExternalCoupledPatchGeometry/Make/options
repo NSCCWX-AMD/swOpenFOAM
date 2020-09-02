@@ -1,0 +1,10 @@
+EXE_INC = \
+    -I$(LIB_SRC)/finiteVolume/lnInclude \
+    -I$(LIB_SRC)/meshTools/lnInclude
+
+EXE_LIBS = \
+    -lturbulenceModels \
+    -lcompressibleTurbulenceModels \
+    -lfiniteVolume \
+    -lmeshTools
+EXE_LIBS_NEW = -lturbulenceModels -lcompressibleTurbulenceModels -lfiniteVolume -lmeshTools -lcompressibleTransportModels -lfluidThermophysicalModels -lsolidThermo -lspecie -lsolidSpecie -lreactionThermophysicalModels -ltriSurface -lfileFormats -lsurfMesh

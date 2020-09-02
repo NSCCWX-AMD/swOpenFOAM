@@ -1,0 +1,10 @@
+MET_VER=metis-5.1.0
+WM_DIR=linux64swgccInt32
+FOAM_LIB=linux64swgccDPInt32Opt
+PLA_DIR=${PWD}/../platforms
+
+make config shared=0 cc=swgcc prefix=${PLA_DIR}/${WM_DIR}/${MET_VER}
+
+make -j 8 install
+
+cp ${PLA_DIR}/${WM_DIR}/${MET_VER}/lib/libmetis.a -f ${PLA_DIR}/${FOAM_LIB}/lib/libmetis.a

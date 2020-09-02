@@ -1,0 +1,1 @@
+EXE_INC = $(COMP_FLAGS) -I/usr/sw-mpp/mpi2/include

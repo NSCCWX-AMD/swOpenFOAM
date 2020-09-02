@@ -1,0 +1,92 @@
+#############################################################
+# path setting
+#############################################################
+PROJECT= 
+LIBPATH= 
+INLCUDE= 
+OBJPATH= 
+
+#############################################################
+# build tool set setting
+#############################################################
+CC= 
+CXX= 
+SLAVECC= 
+AR= 
+RANLIB= 
+LD= 
+
+
+#############################################################
+# source directory
+#############################################################
+INCLUDEFILES:=$(shell find ./ -name  '*\.H')
+INCLUDEFILES+=$(shell find ./ -name  '*\.h')
+INCLUDEFILES+=$(shell find ./ -name  '*\.hpp')
+INCLUDEFILES+=$(shell find ./ -name  '*\.hxx')
+
+include=$(shell echo ${INCLUDEFILES} | sed 's@\.[^ ]*\/\([^\/| ]*\.[h|H][x|p]*\)@ ${INCLUDE}\/\1@g')
+
+CSLAVEFILES:=$(shell find ./ -name  '*_slave\.c')
+CSLAVEFILES+=$(shell find ./ -name  'slaveUtils.c')
+CSLAVEFILES+=$(shell find ./ -name  'rlmpi.c')
+CHOSTFILES=$(shell find ./ -name  '*\.c' | \
+sed 's/[^\\]*_ptr\.c */ /g' | \
+sed 's/[^\\]*_slave\.c */ /g' | \
+sed 's/[^\\]*slaveUtils.c */ /g'| \
+sed 's/[^\\]*rlmpi.c */ /g')
+CPPFILES:=$(shell find ./ -name  '*\.C')
+CPPFILES1=$(shell find ./ -name  '*\.cpp')
+CPPFILES2=$(shell find ./ -name  '*\.cxx')
+CPTRFILES=$(shell find ./ -name '*_ptr\.c')
+
+CHOSTOBJS=$(shell echo ${CHOSTFILES} | sed 's/\.c/\.o/g')
+CSLAVEOBJS=$(shell echo ${CSLAVEFILES} | sed 's/\.c/\.o/g')
+CPPOBJS=$(shell echo ${CPPFILES} | sed 's/\.C/\.o/g')
+CPPOBJS1=$(shell echo ${CPPFILES1} | sed 's/\.cpp/\.o/g')
+CPPOBJS2=$(shell echo ${CPPFILES2} | sed 's/\.cxx/\.o/g')
+
+CHOSTPTROBJS=$(shell echo ${CPTRFILES} | sed 's/\.c/\.o/g')
+CSLAVEPTROBJS=$(shell echo ${CPTRFILES} | sed 's/\.c/_slave\.o/g')
+
+##################################################################
+# Targets
+##################################################################
+#test:
+#	@echo -e "\033[32m the objects \033[0m": ${CHOSTOBJS}";" \
+#	${CSLAVEOBJS}";" ${CPPOBJS}
+
+all: ${CHOSTOBJS} ${CSLAVEOBJS} ${CPPOBJS} ${CPPOBJS1} ${CPPOBJS2} ${CHOSTPTROBJS} ${CSLAVEPTROBJS}
+	@cp ${CHOSTOBJS} ${CSLAVEOBJS} ${CPPOBJS} ${CPPOBJS1} ${CPPOBJS2} ${CHOSTPTROBJS} ${CSLAVEPTROBJS} ${OBJPATH}
+
+${CHOSTOBJS}: %.o:%.c ${include}
+	@echo -e "\033[32mFind host c files \033[0m": ${CHOSTFILES} 
+	${CC} -I${INCLUDE} -c $< -o $@
+${CSLAVEOBJS}: %.o:%.c ${include}
+	@echo -e "\033[32mFind slave c files \033[0m": ${CSLAVEFILES}
+	${SLAVECC} -I${INCLUDE} -c $< -o $@ 
+${CPPOBJS}: %.o:%.C ${include}
+	@echo -e "\033[32mFind cpp files \033[0m": ${CPPFILES}
+	${CXX} -I${INCLUDE} -c $< -o $@
+${CPPOBJS1}: %.o:%.cpp ${include}
+	@echo -e "\033[32mFind cpp files \033[0m": ${CPPFILES1}
+	${CXX} -I${INCLUDE} -c $< -o $@
+${CPPOBJS2}: %.o:%.cxx ${include}
+	@echo -e "\033[32mFind cpp files \033[0m": ${CPPFILES2}
+	${CXX} -I${INCLUDE} -c $< -o $@
+${CHOSTPTROBJS}: %.o:%.c ${include}
+	@echo -e "\033[32mFind PTR files \033[0m": ${CPTRFILES}
+	${CC} -I${INCLUDE} -c $< -o $@
+${CSLAVEPTROBJS}: %_slave.o:%.c ${include}
+	@echo -e "\033[32mFind PTR files \033[0m": ${CPTRFILES}
+	${SLAVECC} -I${INCLUDE} -c $< -o $@
+
+${include}: ${INCLUDEFILES}
+	@echo -e "\033[32mCopying headers ... \033[0m": ${INCLUDEFILES}
+	@cp $^ ${INCLUDE}
+
+
+.PHONY:clean
+clean:
+	@rm -f ${CHOSTOBJS} ${CSLAVEOBJS} ${CPPOBJS}
+

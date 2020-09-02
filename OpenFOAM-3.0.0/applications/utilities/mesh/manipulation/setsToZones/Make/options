@@ -1,0 +1,7 @@
+EXE_INC = \
+    -I$(LIB_SRC)/meshTools/lnInclude
+
+EXE_LIBS = \
+    -lmeshTools \
+    -lsampling
+EXE_LIBS_NEW = -lmeshTools -lsampling -ltriSurface -lfileFormats -lsurfMesh -lfiniteVolume -llagrangian -lconversion

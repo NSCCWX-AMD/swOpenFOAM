@@ -1,0 +1,29 @@
+signals = POSIX/signals
+$(signals)/sigFpe.C
+$(signals)/sigSegv.C
+$(signals)/sigInt.C
+$(signals)/sigQuit.C
+$(signals)/sigStopAtWriteNow.C
+$(signals)/sigWriteNow.C
+POSIX/regExp.C
+POSIX/timer.C
+POSIX/fileStat.C
+POSIX/POSIX.C
+POSIX/cpuTime/cpuTime.C
+POSIX/clockTime/clockTime.C
+POSIX/memInfo/memInfo.C
+
+
+/*
+ * Note: fileMonitor assumes inotify by default. Compile with -DFOAM_USE_STAT
+ * to use stat (=timestamps) instead of inotify
+ */
+POSIX/fileMonitor.C
+
+#ifdef SunOS64
+POSIX/dummyPrintStack.C
+#else
+POSIX/printStack.C
+#endif
+
+LIB = $(FOAM_LIBBIN)/libOSspecific
