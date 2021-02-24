@@ -23,6 +23,11 @@ set -x
 wmake -all utilities $*
 wmake -all solvers $*
 
+# only decomposePar
+# added by hf
+# rm -f ../platforms/linux64swgccDPInt32Opt/bin/decomposePar
+# wmake -all utilities/parallelProcessing/decomposePar $*
+
 # only pisoFoam
 # added by hf
 #rm -f ../platforms/linux64swgccDPInt32Opt/bin/pisoFoam

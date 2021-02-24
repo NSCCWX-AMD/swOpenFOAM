@@ -47,6 +47,10 @@ Description
 #include "localEulerDdtScheme.H"
 #include "fvcSmooth.H"
 
+#ifdef SWLU
+#include "swlu.h"
+#endif
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 int main(int argc, char *argv[])
@@ -75,7 +79,12 @@ int main(int argc, char *argv[])
 
     Info<< "\nStarting time loop\n" << endl;
 
-    while (runTime.run())
+#ifdef SWLU  
+  swlu_prof_init();
+  swlu_prof_start();
+#endif
+
+	while (runTime.run())
     {
         #include "readControls.H"
 
@@ -154,6 +163,10 @@ int main(int argc, char *argv[])
             << "  ClockTime = " << runTime.elapsedClockTime() << " s"
             << nl << endl;
     }
+#ifdef SWLU
+    swlu_prof_stop();
+    swlu_prof_print();
+#endif
 
     Info<< "End\n" << endl;
 

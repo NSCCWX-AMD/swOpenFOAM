@@ -36,7 +36,10 @@ Description
 #include "fvIOoptionList.H"
 
 #include "Timer.hpp"
-//#include "swlu.h"
+
+#ifdef SWLU
+#include "swlu.h"
+#endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -57,8 +60,10 @@ int main(int argc, char *argv[])
 
     Info<< "\nStarting time loop\n" << endl;
 
-	//swlu_prof_init();
-    //swlu_prof_start();
+#ifdef SWLU
+   swlu_prof_init();
+   swlu_prof_start();
+#endif
 
 	while (simple.loop())
     {
@@ -82,8 +87,10 @@ int main(int argc, char *argv[])
         TIMER_PRINT();
     }
 
-	//swlu_prof_stop();
-	//swlu_prof_print();
+#ifdef SWLU
+  swlu_prof_stop();
+  swlu_prof_print();
+#endif
 
     Info<< "End\n" << endl;
 

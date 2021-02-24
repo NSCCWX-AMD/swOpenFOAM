@@ -39,7 +39,9 @@ Description
 #include "pisoControl.H"
 #include "fvIOoptionList.H"
 
-//#include "swlu.h"
+#ifdef SWLU
+#include "swlu.h"
+#endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -60,8 +62,10 @@ int main(int argc, char *argv[])
 
     Info<< "\nStarting time loop\n" << endl;
 
-    //swlu_prof_init();
-    //swlu_prof_start();
+#ifdef SWLU
+    swlu_prof_init();
+    swlu_prof_start();
+#endif
 
     while (runTime.loop())
     {
@@ -90,8 +94,10 @@ int main(int argc, char *argv[])
             << nl << endl;
     }
 
-    //swlu_prof_stop();
-    //swlu_prof_print();
+#ifdef SWLU
+    swlu_prof_stop();
+    swlu_prof_print();
+#endif
 
     Info<< "End\n" << endl;
 

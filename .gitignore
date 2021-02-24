@@ -95,10 +95,11 @@ tmpLIB/
 .tmpLIB/
 *.o
 *.txt
-!CMakeLists.txt
+CMakeLists.txt
 *.html
 *.org
 .tune_err
 *.swp
 .build
+# ThirdParty-3.0.0/
 # end-of-file

@@ -32,6 +32,10 @@ Description
 #include "fvCFD.H"
 #include "pisoControl.H"
 
+#ifdef SWLU
+#include "swlu.h"
+#endif
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 int main(int argc, char *argv[])
@@ -48,6 +52,10 @@ int main(int argc, char *argv[])
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     Info<< "\nStarting time loop\n" << endl;
+#ifdef SWLU
+   swlu_prof_init();
+   swlu_prof_start();
+#endif
     while (runTime.loop())
     {
         Info<< "Time = " << runTime.timeName() << nl << endl;
@@ -116,6 +124,11 @@ int main(int argc, char *argv[])
             << "  ClockTime = " << runTime.elapsedClockTime() << " s"
             << nl << endl;
     }
+
+#ifdef SWLU
+  swlu_prof_stop();
+  swlu_prof_print();
+#endif
 
     Info<< "End\n" << endl;
 
