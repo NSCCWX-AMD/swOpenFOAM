@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2012-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2012-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -56,14 +56,6 @@ Foam::DistributedDelaunayMesh<Triangulation>::buildMap
         nSend[procI]++;
     }
 
-    // Send over how many I need to receive
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    labelListList sendSizes(Pstream::nProcs());
-
-    sendSizes[Pstream::myProcNo()] = nSend;
-
-    combineReduce(sendSizes, UPstream::listEq());
 
     // 2. Size sendMap
     labelListList sendMap(Pstream::nProcs());
@@ -83,6 +75,11 @@ Foam::DistributedDelaunayMesh<Triangulation>::buildMap
         sendMap[procI][nSend[procI]++] = i;
     }
 
+    // 4. Send over how many I need to receive
+    labelList recvSizes;
+    Pstream::exchangeSizes(sendMap, recvSizes);
+
+
     // Determine receive map
     // ~~~~~~~~~~~~~~~~~~~~~
 
@@ -100,7 +97,7 @@ Foam::DistributedDelaunayMesh<Triangulation>::buildMap
     {
         if (procI != Pstream::myProcNo())
         {
-            label nRecv = sendSizes[procI][Pstream::myProcNo()];
+            label nRecv = recvSizes[procI];
 
             constructMap[procI].setSize(nRecv);
 
@@ -792,13 +789,7 @@ bool Foam::DistributedDelaunayMesh<Triangulation>::distribute
     const boundBox& bb
 )
 {
-    notImplemented
-    (
-        "Foam::DistributedDelaunayMesh<Triangulation>::distribute"
-        "("
-        "    const boundBox& bb"
-        ")"
-    );
+    NotImplemented;
 
     if (!Pstream::parRun())
     {
@@ -960,11 +951,8 @@ Foam::DistributedDelaunayMesh<Triangulation>::rangeInsertReferredWithInfo
         }
         else if (lt == Triangulation::OUTSIDE_AFFINE_HULL)
         {
-            WarningIn
-            (
-                "Foam::DistributedDelaunayMesh<Triangulation>"
-                "::rangeInsertReferredWithInfo"
-            )   << "Point is outside affine hull! pt = " << pointToInsert
+            WarningInFunction
+                << "Point is outside affine hull! pt = " << pointToInsert
                 << endl;
         }
         else if (lt == Triangulation::OUTSIDE_CONVEX_HULL)

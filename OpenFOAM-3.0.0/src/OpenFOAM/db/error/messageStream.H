@@ -218,6 +218,15 @@ extern messageStream Info;
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 // Convenience macros to add the file name and line number to the function name
 
+// Compiler provided function name string:
+//     for gcc-compatible compilers use __PRETTY_FUNCTION__
+//     otherwise use the standard __func__
+#ifdef __GNUC__
+    #define FUNCTION_NAME __PRETTY_FUNCTION__
+#else
+    #define FUNCTION_NAME __func__
+#endif
+
 /**
  * \def SeriousErrorIn(functionName)
  * Report an error message using Foam::SeriousError for functionName in
@@ -243,6 +252,10 @@ extern messageStream Info;
 #define WarningIn(fn)                                                         \
     ::Foam::Warning((fn), __FILE__, __LINE__)
 
+//- Report a warning using Foam::Warning
+//  for FUNCTION_NAME in file __FILE__ at line __LINE__
+#define WarningInFunction WarningIn(FUNCTION_NAME)
+
 /**
  * \def IOWarningIn(functionName, ios)
  * Report an IO warning using Foam::Warning for functionName in
@@ -259,6 +272,10 @@ extern messageStream Info;
 */
 #define InfoIn(fn)                                                            \
     ::Foam::Info((fn), __FILE__, __LINE__)
+
+//- Report an information message using Foam::Info
+//  for FUNCTION_NAME in file __FILE__ at line __LINE__
+#define InfoInFunction InfoIn(FUNCTION_NAME)
 
 /**
  * \def IOInfoIn(functionName, ios)

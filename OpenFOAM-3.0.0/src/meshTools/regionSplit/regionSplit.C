@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2013 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -64,11 +64,8 @@ void Foam::regionSplit::transferCoupledFaceRegion
         }
         else if (faceRegion[otherFaceI] != faceRegion[faceI])
         {
-            FatalErrorIn
-            (
-                  "regionSplit::transferCoupledFaceRegion"
-                  "(const label, const label, labelList&, labelList&) const"
-              )   << "Problem : coupled face " << faceI
+            FatalErrorInFunction
+                  << "Problem : coupled face " << faceI
                   << " on patch " << mesh().boundaryMesh().whichPatch(faceI)
                   << " has region " << faceRegion[faceI]
                   << " but coupled face " << otherFaceI
@@ -280,10 +277,8 @@ Foam::label Foam::regionSplit::calcLocalRegionSplit
             {
                 if (syncBlockedFace[faceI] != blockedFace[faceI])
                 {
-                    FatalErrorIn
-                    (
-                        "regionSplit::calcLocalRegionSplit(..)"
-                    )   << "Face " << faceI << " not synchronised. My value:"
+                    FatalErrorInFunction
+                        << "Face " << faceI << " not synchronised. My value:"
                         << blockedFace[faceI] << "  coupled value:"
                         << syncBlockedFace[faceI]
                         << abort(FatalError);
@@ -356,7 +351,7 @@ Foam::label Foam::regionSplit::calcLocalRegionSplit
         {
             if (cellRegion[cellI] < 0)
             {
-                FatalErrorIn("regionSplit::calcLocalRegionSplit(..)")
+                FatalErrorInFunction
                     << "cell:" << cellI << " region:" << cellRegion[cellI]
                     << abort(FatalError);
             }
@@ -366,7 +361,7 @@ Foam::label Foam::regionSplit::calcLocalRegionSplit
         {
             if (faceRegion[faceI] == -1)
             {
-                FatalErrorIn("regionSplit::calcLocalRegionSplit(..)")
+                FatalErrorInFunction
                     << "face:" << faceI << " region:" << faceRegion[faceI]
                     << abort(FatalError);
             }
@@ -628,13 +623,7 @@ Foam::autoPtr<Foam::globalIndex> Foam::regionSplit::calcRegionSplit
 
     // Get the wanted region labels into recvNonLocal
     labelListList recvNonLocal;
-    labelListList sizes;
-    Pstream::exchange<labelList, label>
-    (
-        sendNonLocal,
-        recvNonLocal,
-        sizes
-    );
+    Pstream::exchange<labelList, label>(sendNonLocal, recvNonLocal);
 
     // Now we have the wanted compact region labels that procI wants in
     // recvNonLocal[procI]. Construct corresponding list of compact
@@ -655,13 +644,7 @@ Foam::autoPtr<Foam::globalIndex> Foam::regionSplit::calcRegionSplit
 
     // Send back (into recvNonLocal)
     recvNonLocal.clear();
-    sizes.clear();
-    Pstream::exchange<labelList, label>
-    (
-        sendWantedLocal,
-        recvNonLocal,
-        sizes
-    );
+    Pstream::exchange<labelList, label>(sendWantedLocal, recvNonLocal);
     sendWantedLocal.clear();
 
     // Now recvNonLocal contains for every element in setNonLocal the

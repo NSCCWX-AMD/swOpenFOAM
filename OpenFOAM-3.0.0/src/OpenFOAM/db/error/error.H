@@ -318,6 +318,11 @@ extern IOerror FatalIOError;
 #define FatalErrorIn(fn) \
     ::Foam::FatalError((fn), __FILE__, __LINE__)
 
+
+//- Report an error message using Foam::FatalError
+//  for FUNCTION_NAME in file __FILE__ at line __LINE__
+#define FatalErrorInFunction FatalErrorIn(FUNCTION_NAME)
+
 /**
  * \def FatalIOErrorIn(functionName, ios)
  * Report an error message using Foam::FatalIOError for functionName in
@@ -326,6 +331,12 @@ extern IOerror FatalIOError;
 */
 #define FatalIOErrorIn(fn, ios) \
     ::Foam::FatalIOError((fn), __FILE__, __LINE__, (ios))
+
+
+//- Report an error message using Foam::FatalIOError
+//  for FUNCTION_NAME in file __FILE__ at line __LINE__
+//  for a particular IOstream
+#define FatalIOErrorInFunction(ios) FatalIOErrorIn(FUNCTION_NAME, ios)
 
 /**
  * \def SafeFatalIOErrorIn(functionName, ios, msg)
@@ -350,6 +361,14 @@ extern IOerror FatalIOError;
 */
 #define notImplemented(fn) \
     FatalErrorIn(fn) << "Not implemented" << ::Foam::abort(FatalError);
+
+//- Issue a FatalErrorIn for a function not currently implemented.
+//  The FUNCTION_NAME is printed and then abort is called.
+//
+//  This macro can be particularly useful when methods must be defined to
+//  complete the interface of a derived class even if they should never be
+//  called for this derived class.
+#define NotImplemented notImplemented(FUNCTION_NAME)
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
