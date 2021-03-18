@@ -11,18 +11,10 @@
 #define rowSubsection_H
 
 #include "sunwayMacros.h"
+#include "basicTypes.h"i
 
-#ifdef FOAM_LABEL64
-    typedef swInt64 label;
-#else
-    typedef swInt32 label;
-#endif
-
-#ifdef WM_DP
-    typedef swFloat64 scalar;
-#else
-    typedef swFloat32 scalar;
-#endif
+typedef swInt LABEL;
+typedef swFloat SCALAR;
 
 #ifdef __cplusplus
 extern "C"
@@ -33,16 +25,16 @@ extern "C"
 struct rowSubsection
 {
     // The lower bound for face field DMA
-    label faceStart;
+    LABEL faceStart;
     // The number of data for face field DMA
-    label nFaces;
+    LABEL nFaces;
     // the round at which to write columes
-    label colRound;
+    LABEL colRound;
     // The number of subsections of columns(neighbors)
-    label nSecs;
+    LABEL nSecs;
     // The array holds the subsection "lower bound and data count" pairs of columns(neighbors)
-    //label colStartsAndCounts[2*MAX_COL_SUBSECTIONS];
-    label *colStartsAndCounts;
+    //LABEL colStartsAndCounts[2*MAX_COL_SUBSECTIONS];
+    LABEL *colStartsAndCounts;
 };
 //#undef MAX_COL_SUBSECTIONS
 

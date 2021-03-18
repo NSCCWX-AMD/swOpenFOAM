@@ -30,7 +30,7 @@ License
 
 #include <fstream>
 
-#include "swGAMGAgglomeration.H"
+//#include "swGAMGAgglomeration.H"
 
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 
@@ -192,8 +192,8 @@ void Foam::GAMGSolver::agglomerateMatrix
             //         coarseDiag[-1 - cFace] += 2*fineUpper[fineFacei];
             //     }
             // }
-            swRestInterMap faceRestMap(agglomeration_);
-            faceRestMap.agglomerateMatrixUpper(coarseUpper, coarseDiag, fineUpper, fineLevelIndex);
+            //swRestInterMap faceRestMap(agglomeration_);
+            //faceRestMap.agglomerateMatrixUpper(coarseUpper, coarseDiag, fineUpper, fineLevelIndex);
         }
 
     }

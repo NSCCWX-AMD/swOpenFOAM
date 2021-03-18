@@ -10,7 +10,7 @@
  FV_ROOT = ${ROOT}/src/finiteVolume
  MESH_ROOT = ${ROOT}/src/fvMesh
  PERF_ROOT = ${ROOT}/src/OSspecific
- INCLUDE = -fPIC -Dlinux64 -DWM_ARCH_OPTION=64 -DWM_DP -DWM_LABEL_SIZE=32 -Wall -Wextra -Wno-old-style-cast -Wnon-virtual-dtor -Wno-unused-parameter -O3 -DNoRepository -ftemplate-depth-100 -DSW_SLAVE -I/usr/sw-mpp/mpi2/include -I/usr/sw-mpp/swcc/swgcc453-binary/cross-tools/include -I${FOAM_ROOT}/lnInclude -I${OS_ROOT}/lnInclude -I${FV_ROOT}/lnInclude -I${PERF_ROOT}/lnInclude
+ INCLUDE = -fPIC -Dlinux64 -DWM_ARCH_OPTION=64 -DWM_DP -DWM_LABEL_SIZE=64 -Wall -Wextra -Wno-old-style-cast -Wnon-virtual-dtor -Wno-unused-parameter -O3 -DNoRepository -ftemplate-depth-100 -DSW_SLAVE -I/usr/sw-mpp/mpi2/include -I/usr/sw-mpp/swcc/swgcc453-binary/cross-tools/include -I${FOAM_ROOT}/lnInclude -I${OS_ROOT}/lnInclude -I${FV_ROOT}/lnInclude -I${PERF_ROOT}/lnInclude
 # C_INCLUDE=-I$(CORE_ROOT)/lnInclude/
 
 all:limitedSnGrads.o

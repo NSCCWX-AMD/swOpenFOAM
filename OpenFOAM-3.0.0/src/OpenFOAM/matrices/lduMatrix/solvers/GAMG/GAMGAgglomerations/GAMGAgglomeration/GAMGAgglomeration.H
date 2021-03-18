@@ -497,52 +497,52 @@ public:
 
 //- template specialization, used in swAcc
 //- Restrict (integrate by summation) cell field
-template<>
-void GAMGAgglomeration::restrictField
-(
-    Field<scalar>& cf,
-    const Field<scalar>& ff,
-    const label fineLevelIndex,
-    const bool procAgglom
-) const;
-
-
-template<>
-void GAMGAgglomeration::restrictField
-(
-    Field<scalar>& cf,
-    const Field<scalar>& ff,
-    const label fineLevelIndex
-) const;
-
-
-//- Restrict (integrate by summation) face field
-template<>
-void GAMGAgglomeration::restrictFaceField
-(
-    Field<scalar>& cf,
-    const Field<scalar>& ff,
-    const label fineLevelIndex
-) const;
-
-//- Restrict (integrate by summation) cell field
-template<>
-void GAMGAgglomeration::restrictField
-(
-    Field<scalar>& cf,
-    const Field<scalar>& ff,
-    const labelList& fineToCoarse
-) const;
-
-//- Prolong (interpolate by injection) cell field
-template<>
-void GAMGAgglomeration::prolongField
-(
-    Field<scalar>& ff,
-    const Field<scalar>& cf,
-    const label coarseLevelIndex,
-    const bool procAgglom
-) const;
+//template<>
+//void GAMGAgglomeration::restrictField
+//(
+//    Field<scalar>& cf,
+//    const Field<scalar>& ff,
+//    const label fineLevelIndex,
+//    const bool procAgglom
+//) const;
+//
+//
+//template<>
+//void GAMGAgglomeration::restrictField
+//(
+//    Field<scalar>& cf,
+//    const Field<scalar>& ff,
+//    const label fineLevelIndex
+//) const;
+//
+//
+////- Restrict (integrate by summation) face field
+//template<>
+//void GAMGAgglomeration::restrictFaceField
+//(
+//    Field<scalar>& cf,
+//    const Field<scalar>& ff,
+//    const label fineLevelIndex
+//) const;
+//
+////- Restrict (integrate by summation) cell field
+//template<>
+//void GAMGAgglomeration::restrictField
+//(
+//    Field<scalar>& cf,
+//    const Field<scalar>& ff,
+//    const labelList& fineToCoarse
+//) const;
+//
+////- Prolong (interpolate by injection) cell field
+//template<>
+//void GAMGAgglomeration::prolongField
+//(
+//    Field<scalar>& ff,
+//    const Field<scalar>& cf,
+//    const label coarseLevelIndex,
+//    const bool procAgglom
+//) const;
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

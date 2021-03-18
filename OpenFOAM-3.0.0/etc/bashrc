@@ -47,7 +47,8 @@ export WM_PROJECT_VERSION=3.0.0
 # do not use $PWD, use the dir from echo $PWD/..
 # otherwise out-of-tree compilation fails and exes cannot be found correctly
 ## for compiling
-foamInstall=/home/export/online3/amd_share/OpenFOAM_SW/swOpenFOAM_master
+#foamInstall=/home/export/online3/amd_share/OpenFOAM_SW/swOpenFOAM_master
+foamInstall=/home/export/online3/amd_dev1/gaof/of_int64/swOpenFOAM_master
 ## for running
 ##foamInstall=/home/export/online3/amd_share/OpenFOAM_SW
 
@@ -87,7 +88,7 @@ export WM_PRECISION_OPTION=DP
 
 #- Label size:
 #    WM_LABEL_SIZE = 32 | 64
-export WM_LABEL_SIZE=32
+export WM_LABEL_SIZE=64
 
 #- Optimised, debug, profiling:
 #    WM_COMPILE_OPTION = Opt | Debug | Prof

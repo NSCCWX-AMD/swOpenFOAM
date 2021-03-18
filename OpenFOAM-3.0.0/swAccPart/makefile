@@ -7,27 +7,27 @@ all:
 	@cd performance/slaveUtils && make default
 	@cd performance/CG_switch &&  make default
 	@cd performance/timers &&  make default
-	#@cd performance/rowSubsections && make default
-#	//@cd performance/BlockOrdering && make default
-#	//@cd performance/extensibleArray && make default
-#	//@cd swNegSumDiag &&  make default
-	# @cd lduMatrix &&  make default
+#	////@cd performance/rowSubsections && make default
+#	////@cd performance/BlockOrdering && make default
+#	////@cd performance/extensibleArray && make default
+#	////@cd swNegSumDiag &&  make default
+#   ////@cd lduMatrix &&  make default
 	@cd swArrays &&  make default
 	@cd swATmul && make default
-	@cd swGAMG && make default
+	#@cd swGAMG && make default
 	@cd swPBiCGSTAB && make default
-	@cd swCHEBY && make default
-	@cd swDiagonalPreconditioner && make default
-	@cd swDILUPreconditioner && make default
-	@cd srPCG && make default
-	@cd swScalarFieldOps && make default
-	@cd swField && make default
-	#@cd swGaussGrad && make default
-##	//@cd swSurfaceIntegrate &&  make default
-	#@cd swSurfaceInterpolationScheme &&  make default
-	@cd swGAMGAgglomeration && make default
-#@cd swGAMGPreconditioner && make default
-	@cd printMatrixVector && make default
+	#@cd swCHEBY && make default
+	#@cd swDiagonalPreconditioner && make default
+	#@cd swDILUPreconditioner && make default
+	#@cd srPCG && make default
+	#@cd swScalarFieldOps && make default
+	#@cd swField && make default
+#   ////@cd swGaussGrad && make default
+##	////@cd swSurfaceIntegrate &&  make default
+#   ////@cd swSurfaceInterpolationScheme &&  make default
+	#@cd swGAMGAgglomeration && make default
+#   ////@cd swGAMGPreconditioner && make default
+	#@cd printMatrixVector && make default
 
 cleanAll:
 	@cd performance/slaveUtils && make cleanObjs

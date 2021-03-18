@@ -20,8 +20,8 @@ wmakeCheckPwd "$WM_PROJECT_DIR/applications" || {
 
 set -x
 
-wmake -all utilities $*
-wmake -all solvers $*
+#wmake -all utilities $*
+#wmake -all solvers $*
 
 # only decomposePar
 # added by hf
@@ -38,8 +38,8 @@ wmake -all solvers $*
 #rm -f ../platforms/linux64swgccDPInt32Opt/bin/simpleFoam
 #wmake -all solvers/incompressible/simpleFoam $*
 
-#rm -f ../platforms/linux64swgccDPInt32Opt/bin/icoFoam
-#wmake -all solvers/incompressible/icoFoam $*
+rm -f ../platforms/linux64swgccDPInt32Opt/bin/icoFoam
+wmake -all solvers/incompressible/icoFoam $*
 # rm -f ../platforms/linux64swgccDPInt64Opt/bin/scalarTransportFoam
 # wmake -all solvers/basic/scalarTransportFoam
 

@@ -2,13 +2,7 @@
 #define SUNWAYMACROS_H
 
 #include "mpi.h"
-
-typedef long swInt64;
-typedef int swInt32;
-typedef int swInt;
-typedef double swFloat64;
-typedef float swFloat32;
-typedef double swFloat;
+#include "basicTypes.h"
 
 #define MAX_CARED_RERR (1e-9)
 #define MIN_FP (1e-15)

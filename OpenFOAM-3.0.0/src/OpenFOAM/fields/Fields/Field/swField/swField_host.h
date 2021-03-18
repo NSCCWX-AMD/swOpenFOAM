@@ -1,21 +1,22 @@
 #ifndef CALL_SWFIELD_H
 #define CALL_SWFIELD_H
 #include "sunwayMacros.h"
-typedef swFloat scalar;
-typedef swInt label;
+#include "basicTypes.h"
+typedef swFloat SCALAR;
+typedef swInt LABEL;
 #ifdef __cplusplus
 extern "C" {
 #endif
 
     typedef struct struct_swVectorDotTensor {
-        scalar* igGrad;
-        scalar* f1P; //vector results
-        scalar* f2P; //tensor
-        scalar* f3P; //vector
-        scalar s1;
-        label size;
-        label vector_dim;
-        label tensor_dim;
+        SCALAR* igGrad;
+        SCALAR* f1P; //vector results
+        SCALAR* f2P; //tensor
+        SCALAR* f3P; //vector
+        SCALAR s1;
+        LABEL size;
+        LABEL vector_dim;
+        LABEL tensor_dim;
     } swVectorDotTensor;
 
     void call_swVectorDotTensor_slave(swVectorDotTensor *data);

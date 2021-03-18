@@ -19,13 +19,7 @@ extern "C" {
 #define ALIGNED(addr) ((( ( (unsigned long)(addr) - 1)>>5)+1)<<5)
 #define ArraySize 57344
 
-typedef int    swInt;
-typedef int    swInt32;
-typedef long   swInt64;
-
-typedef double swFloat;
-typedef float  swFloat32;
-typedef double swFloat64;
+#include "basicTypes.h"
 
 #ifdef __cplusplus
 }
