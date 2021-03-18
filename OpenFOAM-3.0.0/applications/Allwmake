@@ -38,7 +38,7 @@ set -x
 #rm -f ../platforms/linux64swgccDPInt32Opt/bin/simpleFoam
 #wmake -all solvers/incompressible/simpleFoam $*
 
-rm -f ../platforms/linux64swgccDPInt32Opt/bin/icoFoam
+rm -f ../platforms/linux64swgccDPInt64Opt/bin/icoFoam
 wmake -all solvers/incompressible/icoFoam $*
 # rm -f ../platforms/linux64swgccDPInt64Opt/bin/scalarTransportFoam
 # wmake -all solvers/basic/scalarTransportFoam

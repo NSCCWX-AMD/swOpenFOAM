@@ -36,7 +36,7 @@ fi
 src/Allwmake $targetType $*
 
 # Compile swAcc
-make
+//make
 
 # Compile OpenFOAM libraries and applications
 applications/Allwmake $targetType $*
