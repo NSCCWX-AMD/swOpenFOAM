@@ -30,7 +30,7 @@ License
 
 #include <fstream>
 
-//#include "swGAMGAgglomeration.H"
+#include "swGAMGAgglomeration.H"
 
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 
@@ -178,22 +178,22 @@ void Foam::GAMGSolver::agglomerateMatrix
             // Coarse matrix upper coefficients
             scalarField& coarseUpper = coarseMatrix.upper(nCoarseFaces);
 
-            // forAll(faceRestrictAddr, fineFacei)
-            // {
-            //     label cFace = faceRestrictAddr[fineFacei];
+            forAll(faceRestrictAddr, fineFacei)
+            {
+                label cFace = faceRestrictAddr[fineFacei];
 
-            //     if (cFace >= 0)
-            //     {
-            //         coarseUpper[cFace] += fineUpper[fineFacei];
-            //     }
-            //     else
-            //     {
-            //         // Add the fine face coefficient into the diagonal.
-            //         coarseDiag[-1 - cFace] += 2*fineUpper[fineFacei];
-            //     }
-            // }
-            //swRestInterMap faceRestMap(agglomeration_);
-            //faceRestMap.agglomerateMatrixUpper(coarseUpper, coarseDiag, fineUpper, fineLevelIndex);
+                if (cFace >= 0)
+                {
+                    coarseUpper[cFace] += fineUpper[fineFacei];
+                }
+                else
+                {
+                    // Add the fine face coefficient into the diagonal.
+                    coarseDiag[-1 - cFace] += 2*fineUpper[fineFacei];
+                }
+            }
+            /*swRestInterMap faceRestMap(agglomeration_);
+            faceRestMap.agglomerateMatrixUpper(coarseUpper, coarseDiag, fineUpper, fineLevelIndex);*/
         }
 
     }

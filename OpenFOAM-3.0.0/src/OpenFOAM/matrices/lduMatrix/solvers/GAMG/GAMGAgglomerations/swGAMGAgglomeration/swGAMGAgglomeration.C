@@ -2,6 +2,8 @@
 #include "swGAMGAgglomeration.H"
 #include "mapDistribute.H"
 #include "globalIndex.H"
+#include "label.H"
+#include "mpi.h"
 
 
 #include <fstream>
@@ -30,6 +32,15 @@ namespace Foam
 	label swRestInterMap::minCellsUsingSW_ = 10000;
 }
 
+Foam::swRestInterMap::swRestInterMap(const GAMGAgglomeration& aggl)
+	:
+		aggl_(aggl)
+{
+	// creat std::vector<std::vector<int>> restrictAddressing_int32 
+	// from PtrList<labelField> restrictAddressing_
+	restrictAddressing_int32.resize(100);
+	
+}
 
 void Foam::swRestInterMap::initRestInterMap()
 {
@@ -91,7 +102,46 @@ void Foam::swRestInterMap::initRestStruct
 {
 	if(restFirstUse_[fineLevelIndex])
 	{
-		const swInt* restrictMap  = aggl_.restrictAddressing(fineLevelIndex).begin();
+		//const swInt* restrictMap  = aggl_.restrictAddressing(fineLevelIndex).begin();
+		const labelField& raField = aggl_.restrictAddressing(fineLevelIndex);
+		restrictAddressing_int32[fineLevelIndex].clear();
+		restrictAddressing_int32[fineLevelIndex].resize( raField.size() );
+
+		for (int ilf = 0; ilf < raField.size(); ++ilf)
+		{
+			restrictAddressing_int32[fineLevelIndex][ilf] = raField[ilf];
+		}
+		const swInt* restrictMap  = &restrictAddressing_int32[fineLevelIndex][0];
+#if 1
+{
+		static int icheck = 0;
+		icheck++;
+		int rank;
+        MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+		//printf("check restrictAddressing_int32\n");
+        char filename[256];
+        sprintf(filename,"debug/processor%d.dat",rank);
+        //FILE* debug_fp=fopen(filename,"w");
+        //fprintf(debug_fp,"date: %s\n",__DATE__);
+        //fprintf(debug_fp,"time: %s\n",__TIME__);
+        int errorNum = 0;
+        for(int i = 0 ; i < restrictAddressing_int32[fineLevelIndex].size() ; i++) 
+        {
+        	//if(restrictAddressing_int32[fineLevelIndex][i]!=raField[i])
+        	if(*(restrictMap+i)!=raField[i])
+        	{
+        		errorNum++;
+        		//fprintf(debug_fp, "error\n");
+        	}
+            /*fprintf(debug_fp,"i=%d:  %d, %ld\n",
+                i,restrictAddressing_int32[fineLevelIndex][i], raField[i]);*/
+        }
+        //fclose(debug_fp);
+        printf("rank%d: checkinitRestStruct, icheck=%d, errorNum=%d\n",rank, icheck, errorNum);
+        //printf("end check restrictAddressing_int32\n");
+}
+#endif
+
 		const swInt fSize = ff.size();
 		const swInt cSize = cf.size();
 		swInt slaveCycles = cSize / (bandSize_*64);
@@ -184,7 +234,44 @@ void Foam::swRestInterMap::initInterStruct
 {
 	if(interFirstUse_[levelIndex])
 	{
-		const swInt* restrictMap  = aggl_.restrictAddressing(levelIndex).begin();
+		//const swInt* restrictMap  = aggl_.restrictAddressing(levelIndex).begin();
+		const labelField& raField = aggl_.restrictAddressing(levelIndex);
+		restrictAddressing_int32[levelIndex].clear();
+		restrictAddressing_int32[levelIndex].resize( raField.size() );
+
+		for (int ilf = 0; ilf < raField.size(); ++ilf)
+		{
+			restrictAddressing_int32[levelIndex][ilf] = raField[ilf];
+		}
+#if 0
+{
+		static int icheck = 0;
+		icheck++;
+		int rank;
+        MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+		//printf("check restrictAddressing_int32\n");
+        char filename[256];
+        sprintf(filename,"debug/processor%d.dat",rank);
+        //FILE* debug_fp=fopen(filename,"w");
+        //fprintf(debug_fp,"date: %s\n",__DATE__);
+        //fprintf(debug_fp,"time: %s\n",__TIME__);
+        int errorNum = 0;
+        for(int i = 0 ; i < restrictAddressing_int32[levelIndex].size() ; i++) 
+        {
+        	if(restrictAddressing_int32[levelIndex][i]!=raField[i])
+        	{
+        		errorNum++;
+        		//fprintf(debug_fp, "error\n");
+        	}
+            /*fprintf(debug_fp,"i=%d:  %d, %ld\n",
+                i,restrictAddressing_int32[levelIndex][i], raField[i]);*/
+        }
+        //fclose(debug_fp);
+        printf("rank%d: check initInterStruct, icheck=%d, errorNum=%d\n",rank, icheck, errorNum);
+        //printf("end check restrictAddressing_int32\n");
+}
+#endif
+		const swInt* restrictMap  = &restrictAddressing_int32[levelIndex][0];
 		const swInt fSize = ff.size();
 		const swInt cSize = cf.size();
 
@@ -351,6 +438,8 @@ void Foam::GAMGAgglomeration::restrictField
     {
     	swRestInterMap restMap(*this);
     	restMap.initRestStruct(cf, ff, fineLevelIndex);
+    	/*printf("restrictData_host is called\n");
+    	std::exit(0);*/
    
     	restrictData_host(&swRestInterMap::restStructLevels_[fineLevelIndex]);
     }
@@ -515,6 +604,9 @@ void Foam::GAMGAgglomeration::prolongField
         {
         	swRestInterMap interMap(*this);
         	interMap.initInterStruct(ff, cf, levelIndex);
+        	/*printf("interpolateData_host is called\n");
+    		std::exit(0);*/
+   
         	interpolateData_host(&swRestInterMap::interStructLevels_[levelIndex]);
         }
         else

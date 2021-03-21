@@ -3,6 +3,7 @@
 
 #include "GAMGAgglomeration.H"
 #include "swRestInterStruct.h"
+#include <vector>
 
 namespace Foam
 {
@@ -12,14 +13,13 @@ class swRestInterMap
 {
 private:
 	const GAMGAgglomeration& aggl_;
+	// int32 copy of PtrList<labelField> restrictAddressing_;
+	std::vector<std::vector<int> > restrictAddressing_int32;
+
 public:
+	swRestInterMap(const GAMGAgglomeration& aggl);
+	
 	friend class GAMGAgglomeration;
-
-	swRestInterMap(const GAMGAgglomeration& aggl)
-	:
-		aggl_(aggl)
-	{}
-
 
 	static label bandSize_;
 	static label minCellsUsingSW_;

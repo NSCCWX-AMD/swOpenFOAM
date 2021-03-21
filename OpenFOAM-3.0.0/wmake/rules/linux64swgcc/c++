@@ -13,7 +13,7 @@ include $(RULES)/c++$(WM_COMPILE_OPTION)
 ptFLAGS     = -DNoRepository -ftemplate-depth-100
 
 #-DSWTIMER=1 
-c++FLAGS    = $(GFLAGS) $(c++WARN) $(c++OPT) $(c++DBUG) $(ptFLAGS) $(LIB_HEADER_DIRS) -I/usr/sw-mpp/swcc/swgcc453-binary/cross-tools/include -I${HOME}/include
+c++FLAGS    = $(GFLAGS) $(c++WARN) $(c++OPT) $(c++DBUG) $(ptFLAGS) $(LIB_HEADER_DIRS) -DMPICH_SKIP_MPICXX -I/usr/sw-mpp/swcc/swgcc453-binary/cross-tools/include -I${HOME}/include -I/usr/sw-mpp/mpi2/include
 
 Ctoo        = $(WM_SCHEDULER) $(CC) $(c++FLAGS) -c $< -o $@
 cxxtoo      = $(Ctoo)

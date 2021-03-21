@@ -310,7 +310,7 @@ $(GAMGInterfaceFields)/processorCyclicGAMGInterfaceField/processorCyclicGAMGInte
 $(GAMGInterfaceFields)/cyclicGAMGInterfaceField/cyclicGAMGInterfaceField.C
 
 GAMGAgglomerations = $(GAMG)/GAMGAgglomerations
-#$(GAMGAgglomerations)/swGAMGAgglomeration/swGAMGAgglomeration.C
+##$(GAMGAgglomerations)/swGAMGAgglomeration/swGAMGAgglomeration.C
 
 GAMGAgglomeration = $(GAMGAgglomerations)/GAMGAgglomeration
 $(GAMGAgglomeration)/GAMGAgglomeration.C

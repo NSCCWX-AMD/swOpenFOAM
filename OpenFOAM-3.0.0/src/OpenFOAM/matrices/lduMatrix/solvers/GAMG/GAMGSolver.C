@@ -26,7 +26,7 @@ License
 #include "GAMGSolver.H"
 #include "GAMGInterface.H"
 
-//#include "swGAMGAgglomeration.H"
+#include "swGAMGAgglomeration.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -87,8 +87,8 @@ Foam::GAMGSolver::GAMGSolver
 {
     readControls();
 
-    //swRestInterMap restMap(agglomeration_);
-    //restMap.initRestInterMap();
+    /*swRestInterMap restMap(agglomeration_);
+    restMap.initRestInterMap();*/
 
     if (agglomeration_.processorAgglomerate())
     {

@@ -27,6 +27,7 @@ License
 #include "ICCG.H"
 #include "BICCG.H"
 #include "SubField.H"
+//#include "printMatrixVector.hpp"
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
@@ -98,6 +99,10 @@ Foam::solverPerformance Foam::GAMGSolver::solve
             scratch1,
             scratch2
         );
+
+       /* printLDUMatrix(matrix_,"A_before_vcycle");
+        printVector(source,"b_before_vcycle");
+        std::exit(0);*/
 
         do
         {
