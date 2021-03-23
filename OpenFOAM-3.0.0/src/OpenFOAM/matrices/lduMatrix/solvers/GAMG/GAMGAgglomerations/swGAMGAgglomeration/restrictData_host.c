@@ -7,4 +7,5 @@ void restrictData_host(restStruct* rs)
 	athread_join();
 
 	//printf("restrictData_host is called\n");
+	//exit(0);
 }

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 LIBS_STRING=
-LD="swld453 -static"
+LD="mpicxx -static"
 LINK_FLAG_FLAG= # empty or -Wl
 OFLIB_PAT=${FOAM_LIBBIN}
 EXTLIB_PATH=${FOAM_EXT_LIBBIN}
@@ -131,8 +131,8 @@ done
 
 LINKLIBS=`echo ${OFLIBS[*]} | sed 's/  */\n/g' | sed 's/\(.*\)/-l\1/g'`
 
-LINK_STRING="$LD ${LINK_STRING} ${LINK_FLAG_FLAG}--whole-archive \
-			 ${LINKLIBS[*]} ${LINK_FLAG_FLAG}--no-whole-archive ${NON_OFLIBS[*]}"
+LINK_STRING="$LD ${LINK_STRING} ${LINK_FLAG_FLAG} -Wl,--whole-archive \
+			 ${LINKLIBS[*]} ${LINK_FLAG_FLAG} -Wl,--no-whole-archive ${NON_OFLIBS[*]}"
 echo ${LINK_STRING}
 cd ${CURRPATH}
 `${LINK_STRING}`

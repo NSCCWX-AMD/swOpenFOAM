@@ -49,6 +49,10 @@ SourceFiles
 #define UINT64_MIN 0
 #endif
 
+#define INT64_MIN (-9223372036854775807-1)
+#define INT64_MAX (9223372036854775807) 
+#define UINT64_MAX (9223372036854775807)
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam

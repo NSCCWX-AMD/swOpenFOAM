@@ -112,7 +112,7 @@ void Foam::swRestInterMap::initRestStruct
 			restrictAddressing_int32[fineLevelIndex][ilf] = raField[ilf];
 		}
 		const swInt* restrictMap  = &restrictAddressing_int32[fineLevelIndex][0];
-#if 1
+#if 0
 {
 		static int icheck = 0;
 		icheck++;
@@ -218,10 +218,23 @@ void Foam::swRestInterMap::initRestStruct
 	    restStructLevels_[fineLevelIndex].slaveCycles   = slaveCycles;
 
 		restFirstUse_[fineLevelIndex] = false;
+
+#if 0
+{
+	int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+	printf("rank%d: mapPtrsize %ld, rangsize %dx4, slaveCycle %d, ff %ld, cf %ld\n", rank,
+		restrictAddressing_int32[fineLevelIndex].size(), 
+		slaveCores, slaveCycles, 
+		ff.size(),cf.size());
+}
+#endif
+
 	}
 
 	restStructLevels_[fineLevelIndex].fPtr = ff.begin();
 	restStructLevels_[fineLevelIndex].cPtr = cf.begin();
+
 }
 
 
@@ -438,10 +451,26 @@ void Foam::GAMGAgglomeration::restrictField
     {
     	swRestInterMap restMap(*this);
     	restMap.initRestStruct(cf, ff, fineLevelIndex);
-    	/*printf("restrictData_host is called\n");
-    	std::exit(0);*/
    
     	restrictData_host(&swRestInterMap::restStructLevels_[fineLevelIndex]);
+
+#if 0
+    	// 输出从核计算结果
+    	int rank;
+        MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+        char filename[256];
+        sprintf(filename,"debug/processor%d.dat",rank);
+        FILE* debug_fp=fopen(filename,"w");
+        fprintf(debug_fp,"date: %s\n",__DATE__);
+        fprintf(debug_fp,"time: %s\n",__TIME__);
+        fprintf(debug_fp,"cf.size()=%ld, i, cf[i]\n", cf.size());
+        for(int i = 0 ; i < cf.size() ; i++) 
+        {
+            fprintf(debug_fp,"%d, %g\n", i,cf[i]);
+        }
+        fclose(debug_fp);
+        std::exit(0);
+#endif 
     }
     else
     {
@@ -450,6 +479,27 @@ void Foam::GAMGAgglomeration::restrictField
 	    {
 	        cf[fineToCoarse[i]] += ff[i];
 	    }
+/*#if 1
+    	// 输出从核计算结果
+if(ff.size() > swRestInterMap::minCellsUsingSW_)
+{
+    	int rank;
+        MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+        char filename[256];
+        sprintf(filename,"debug_host/processor%d.dat",rank);
+        FILE* debug_fp=fopen(filename,"w");
+        fprintf(debug_fp,"date: %s\n",__DATE__);
+        fprintf(debug_fp,"time: %s\n",__TIME__);
+        fprintf(debug_fp,"cf.size()=%ld, i, cf[i]\n", cf.size());
+        for(int i = 0 ; i < cf.size() ; i++) 
+        {
+            fprintf(debug_fp,"%d, %g\n", i,cf[i]);
+        }
+        fclose(debug_fp);
+        std::exit(0);
+}
+#endif*/
+
     }
 }
 
@@ -600,22 +650,20 @@ void Foam::GAMGAgglomeration::prolongField
     }
     else
     {
-        if(ff.size() > swRestInterMap::minCellsUsingSW_)
+        /*if(ff.size() > swRestInterMap::minCellsUsingSW_)
         {
         	swRestInterMap interMap(*this);
         	interMap.initInterStruct(ff, cf, levelIndex);
-        	/*printf("interpolateData_host is called\n");
-    		std::exit(0);*/
    
         	interpolateData_host(&swRestInterMap::interStructLevels_[levelIndex]);
         }
         else
-        {
+        {*/
         	forAll(fineToCoarse, i)
 	        {
 	            ff[i] = cf[fineToCoarse[i]];
 	        }
-        }
+        //}
     }
 }
 

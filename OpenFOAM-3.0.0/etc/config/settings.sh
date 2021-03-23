@@ -485,7 +485,7 @@ MPICH)
 
 SWMPI)
     export FOAM_MPI=mpi
-    export MPI_ARCH_PATH=/usr/sw-mpp/mpi2
+    export MPI_ARCH_PATH=/usr/sw-mpp/swcc/new_compiler_710/mpi_install/lib
     ;;
 
 MPICH-GM)

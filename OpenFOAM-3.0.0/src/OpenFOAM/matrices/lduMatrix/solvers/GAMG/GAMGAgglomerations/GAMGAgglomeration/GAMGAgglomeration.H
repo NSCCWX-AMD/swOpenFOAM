@@ -497,7 +497,7 @@ public:
 
 //- template specialization, used in swAcc
 //- Restrict (integrate by summation) cell field
-/*template<>
+template<>
 void GAMGAgglomeration::restrictField
 (
     Field<scalar>& cf,
@@ -542,7 +542,7 @@ void GAMGAgglomeration::prolongField
     const Field<scalar>& cf,
     const label coarseLevelIndex,
     const bool procAgglom
-) const;*/
+) const;
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

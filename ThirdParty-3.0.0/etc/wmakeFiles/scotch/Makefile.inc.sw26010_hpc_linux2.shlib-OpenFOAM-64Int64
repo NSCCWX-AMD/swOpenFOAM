@@ -7,7 +7,7 @@ AR		= swar
 #ARFLAGS		= -shared -o
 ARFLAGS		= -cru -o
 CAT		= cat
-CCS		= sw5cc -host
+CCS		= sw5gcc -mhost
 CCP		= mpicc
 #CCD	 = mpicc
 # CCD is used for build tools for compilation, should be local ones

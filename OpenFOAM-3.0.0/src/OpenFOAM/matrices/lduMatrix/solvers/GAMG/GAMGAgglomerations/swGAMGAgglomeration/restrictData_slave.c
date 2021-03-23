@@ -25,6 +25,7 @@ void restrictData_slave(restStruct* rs)
 
     swInt sizePerCycle;
     my_id = athread_get_id(-1);
+    //if(my_id==0)printf("myid=%d\n",my_id);
 
     swFloat* f_hostPtr     = rs_slave.fPtr;
     swFloat* c_hostPtr     = rs_slave.cPtr;

@@ -87,8 +87,8 @@ Foam::GAMGSolver::GAMGSolver
 {
     readControls();
 
-    /*swRestInterMap restMap(agglomeration_);
-    restMap.initRestInterMap();*/
+    swRestInterMap restMap(agglomeration_);
+    restMap.initRestInterMap();
 
     if (agglomeration_.processorAgglomerate())
     {

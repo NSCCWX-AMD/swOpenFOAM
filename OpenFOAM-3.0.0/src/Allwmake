@@ -67,8 +67,8 @@ TurbulenceModels/Allwmake $targetType $*
 wmake $targetType combustionModels
 regionModels/Allwmake $targetType $*
 lagrangian/Allwmake $targetType $*
-mesh/Allwmake $targetType $*
-renumber/Allwmake $targetType $*
+#mesh/Allwmake $targetType $*
+#renumber/Allwmake $targetType $*
 fvAgglomerationMethods/Allwmake $targetType $*
 
 wmake $targetType fvMotionSolver
@@ -78,7 +78,7 @@ wmake $targetType regionCoupled
 
 postProcessing/Allwmake $targetType $*
 
-wmake $targetType sixDoFRigidBodyMotion
+#wmake $targetType sixDoFRigidBodyMotion
 
 
 # ----------------------------------------------------------------- end-of-file
