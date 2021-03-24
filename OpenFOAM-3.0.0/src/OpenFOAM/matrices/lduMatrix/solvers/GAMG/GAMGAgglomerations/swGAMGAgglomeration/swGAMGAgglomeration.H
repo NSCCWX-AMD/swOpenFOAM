@@ -14,7 +14,7 @@ class swRestInterMap
 private:
 	const GAMGAgglomeration& aggl_;
 	// int32 copy of PtrList<labelField> restrictAddressing_;
-	std::vector<std::vector<int> > restrictAddressing_int32;
+	//std::vector<std::vector<int> > restrictAddressing_int32;
 
 public:
 	swRestInterMap(const GAMGAgglomeration& aggl);
@@ -23,6 +23,9 @@ public:
 
 	static label bandSize_;
 	static label minCellsUsingSW_;
+
+	// 
+	static int** restrictAddressing_int32;
 
 	//- restrict
 	static bool* restFirstUse_;

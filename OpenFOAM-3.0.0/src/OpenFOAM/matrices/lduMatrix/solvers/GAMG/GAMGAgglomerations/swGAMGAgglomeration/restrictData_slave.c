@@ -1,7 +1,16 @@
 #include "slave.h"
 #include "swRestInterStruct.h"
-
-void restrictData_slave(restStruct* rs)
+/*#define athread_get(MODE, SRC, DST, SIZE, REPLY, x, y, z) {\
+  memcpy(DST, SRC, SIZE);\
+  (*(REPLY))++;\
+}
+#define athread_put(MODE, SRC, DST, SIZE, REPLY, x, y) {\
+  memcpy(DST, SRC, SIZE);\
+  (*(REPLY))++;\
+}
+__thread_local int fake_id;
+#define athread_get_id(x) fake_id;*/
+void restrictData_slave(restStruct* rs) //_original
 {
 	restStruct rs_slave;
 	volatile swInt get_reply, put_reply;
@@ -41,12 +50,12 @@ void restrictData_slave(restStruct* rs)
                     &range_hostPtr[my_id + cycleI*64][0],
                     &range_local,
                     4*sizeof(swInt),
-                    (swInt*) (&get_reply),
+                    (volatile swInt*) (&get_reply),
                     0,0,0);
         while (get_reply != 1);
 
         //- range_local[0]: coarse left
-        //- range_local[1]: coarse right
+        //- range_local[1]: coarse rightvolatile
         //- range_local[2]: fine left
         //- range_local[3]: fine right
 
@@ -100,6 +109,7 @@ void restrictData_slave(restStruct* rs)
                 if(cPos >= range_local[0] && cPos <= range_local[1])
                 {
                     c_slavePtr[cPos - range_local[0]] += f_slavePtr[j];
+                    // c_hostPtr[cPos] += f_slavePtr[j];
                 }
             }
             // update remainings and offset_vector for next loop
@@ -119,3 +129,9 @@ void restrictData_slave(restStruct* rs)
         while(put_reply!=1);
     }
 }
+/*void restrictData_slave(restStruct* rs) {
+    if (_MYID > 0) return;
+    for (fake_id = 0; fake_id < 64; fake_id ++) {
+        restrictData_slave_original(rs);
+    }
+}*/

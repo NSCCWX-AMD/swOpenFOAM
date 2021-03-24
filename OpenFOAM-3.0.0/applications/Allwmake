@@ -44,5 +44,7 @@ wmake -all solvers/incompressible/icoFoam $*
 # rm -f ../platforms/linux64swgccDPInt64Opt/bin/scalarTransportFoam
 # wmake -all solvers/basic/scalarTransportFoam
 
+#rm -f ../platforms/linux64swgcc710DPInt64Opt/bin/sprayFoam
+#wmake -all solvers/lagrangian/sprayFoam $*
 
 # ----------------------------------------------------------------- end-of-file

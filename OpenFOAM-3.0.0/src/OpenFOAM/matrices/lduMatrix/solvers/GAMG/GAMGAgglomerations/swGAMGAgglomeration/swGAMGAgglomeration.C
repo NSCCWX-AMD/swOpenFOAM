@@ -4,13 +4,18 @@
 #include "globalIndex.H"
 #include "label.H"
 #include "mpi.h"
-
-
+#include "argList.H"
+#include "clock.H"
+/*#include <time.h>
+time_t time(time_t *timer);*/
 #include <fstream>
+
 
 #define swForAll(i, size) for(int i=0; i<size; ++i)
 namespace Foam
 {
+	int** swRestInterMap::restrictAddressing_int32 = new int*[100];
+
 	//- restrict
 	bool* swRestInterMap::restFirstUse_ = NULL;
 	restStruct* swRestInterMap::restStructLevels_ = NULL;
@@ -38,13 +43,17 @@ Foam::swRestInterMap::swRestInterMap(const GAMGAgglomeration& aggl)
 {
 	// creat std::vector<std::vector<int>> restrictAddressing_int32 
 	// from PtrList<labelField> restrictAddressing_
-	restrictAddressing_int32.resize(100);
 	
 }
 
 void Foam::swRestInterMap::initRestInterMap()
 {
 	const label levelSize = aggl_.size();
+
+	for (int i = 0; i < 100; ++i)
+	{
+		restrictAddressing_int32[i] = NULL;
+	}
 
 	if(!restFirstUse_)
 	{
@@ -104,8 +113,17 @@ void Foam::swRestInterMap::initRestStruct
 	{
 		//const swInt* restrictMap  = aggl_.restrictAddressing(fineLevelIndex).begin();
 		const labelField& raField = aggl_.restrictAddressing(fineLevelIndex);
-		restrictAddressing_int32[fineLevelIndex].clear();
-		restrictAddressing_int32[fineLevelIndex].resize( raField.size() );
+		//restrictAddressing_int32[fineLevelIndex].clear();
+		//restrictAddressing_int32[fineLevelIndex].resize(  );
+		if (restrictAddressing_int32[fineLevelIndex]==NULL)
+		{
+			restrictAddressing_int32[fineLevelIndex] = new int[raField.size()];
+		}
+		else {
+			delete [] restrictAddressing_int32[fineLevelIndex];
+			restrictAddressing_int32[fineLevelIndex] = NULL;
+			restrictAddressing_int32[fineLevelIndex] = new int[raField.size()];
+		}
 
 		for (int ilf = 0; ilf < raField.size(); ++ilf)
 		{
@@ -249,8 +267,17 @@ void Foam::swRestInterMap::initInterStruct
 	{
 		//const swInt* restrictMap  = aggl_.restrictAddressing(levelIndex).begin();
 		const labelField& raField = aggl_.restrictAddressing(levelIndex);
-		restrictAddressing_int32[levelIndex].clear();
-		restrictAddressing_int32[levelIndex].resize( raField.size() );
+		/*restrictAddressing_int32[levelIndex].clear();
+		restrictAddressing_int32[levelIndex].resize( raField.size() );*/
+		if (restrictAddressing_int32[levelIndex]==NULL)
+		{
+			restrictAddressing_int32[levelIndex] = new int[raField.size()];
+		}
+		else {
+			delete [] restrictAddressing_int32[levelIndex];
+			restrictAddressing_int32[levelIndex]=NULL;
+			restrictAddressing_int32[levelIndex] = new int[raField.size()];
+		}
 
 		for (int ilf = 0; ilf < raField.size(); ++ilf)
 		{
@@ -451,8 +478,59 @@ void Foam::GAMGAgglomeration::restrictField
     {
     	swRestInterMap restMap(*this);
     	restMap.initRestStruct(cf, ff, fineLevelIndex);
-   
     	restrictData_host(&swRestInterMap::restStructLevels_[fineLevelIndex]);
+
+#if 0   // 对比多步主从计算结果
+{
+    	Field<scalar> cf_sw(cf.size());
+    	cf_sw = pTraits<scalar>::zero;
+    	swRestInterMap restMap(*this);
+    	restMap.initRestStruct(cf_sw, ff, fineLevelIndex);
+    	restrictData_host(&swRestInterMap::restStructLevels_[fineLevelIndex]);
+
+    	const labelList& fineToCoarse = restrictAddressing_[fineLevelIndex];
+    	forAll(ff, i)
+	    {
+	        cf[fineToCoarse[i]] += ff[i];
+	    }
+
+	    int rank;
+        MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+        char filename[256];
+        sprintf(filename,"debug/processor%d.dat",rank);
+        FILE* debug_fp = fopen(filename,"a");
+        static int ncall = 0;
+        ncall++;
+        if (ncall==1)
+        {
+        	string dateString = clock::date();
+            string timeString = clock::clockTime();
+            fprintf(debug_fp,"Date: %s\n", dateString.c_str());
+            fprintf(debug_fp,"Time: %s\n\n", timeString.c_str());
+        	/*fprintf(debug_fp,"date: %s\n",__DATE__);
+        	fprintf(debug_fp,"time: %s\n",__TIME__);*/
+        	/*time_t tt;
+    		time( &tt );
+    		tt = tt + 8*3600;
+    		tm* t= gmtime( &tt );
+			fprintf(debug_fp,"time: %d-%02d-%02d %02d:%02d:%02d\n",
+            	t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
+            	t->tm_hour, t->tm_min, t->tm_sec);*/
+        }
+        fprintf(debug_fp,"ncall=%d, cf.size()=%ld, i, cf[i]\n", ncall, cf.size());
+        for(int i = 0 ; i < cf.size() ; i++) 
+        {
+        	if( fabs(cf[i]-cf_sw[i]) > fabs(1e-8*cf[i]) )fprintf(debug_fp,"error:\n");
+            fprintf(debug_fp,"nc=%d, i=%d:   %15.14e, %15.14e\n", ncall, i,cf[i], cf_sw[i]);
+        }
+
+        fclose(debug_fp);
+        if (ncall==10)
+        {
+        	std::exit(0);
+        }
+}
+#endif
 
 #if 0
     	// 输出从核计算结果
@@ -650,7 +728,7 @@ void Foam::GAMGAgglomeration::prolongField
     }
     else
     {
-        /*if(ff.size() > swRestInterMap::minCellsUsingSW_)
+        if(ff.size() > swRestInterMap::minCellsUsingSW_)
         {
         	swRestInterMap interMap(*this);
         	interMap.initInterStruct(ff, cf, levelIndex);
@@ -658,12 +736,12 @@ void Foam::GAMGAgglomeration::prolongField
         	interpolateData_host(&swRestInterMap::interStructLevels_[levelIndex]);
         }
         else
-        {*/
+        {
         	forAll(fineToCoarse, i)
 	        {
 	            ff[i] = cf[fineToCoarse[i]];
 	        }
-        //}
+        }
     }
 }
 
