@@ -1,6 +1,6 @@
 include ${WM_PROJECT_DIR}/swAccPart/makefile.env
 
-SLAVEFLAGS=-slave -msimd -OPT:IEEE_arith=1
+SLAVEFLAGS=-mslave -msimd -mieee -D_SW_COMPILER_VERSION
 LIB_TARGET=${LIB_ROOT}/libOSspecific.a
 
 OBJS = slaveUtils.o

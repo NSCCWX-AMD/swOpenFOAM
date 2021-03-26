@@ -51,6 +51,11 @@ namespace Foam
     int SW_GAMGSolver::if_first = 1;
     refilltion *SW_GAMGSolver::_refill;
     int SW_GAMGSolver::_coarseLevel;
+
+    int* SW_GAMGSolver::upperAddr_int32;
+    int* SW_GAMGSolver::lowerAddr_int32;
+    int** SW_GAMGSolver::upperAddrLevels_int32;
+    int** SW_GAMGSolver::lowerAddrLevels_int32;    
 }
 
 
@@ -91,8 +96,28 @@ Foam::SW_GAMGSolver::SW_GAMGSolver
         register  label nFaces = matrix.upper().size();
         const scalar* upperPtr = matrix.upper().begin();
         const scalar* lowerPtr = matrix.lower().begin();
-        const label* uPtr = matrix.lduAddr().upperAddr().begin();
-        const label* lPtr = matrix.lduAddr().lowerAddr().begin();
+        /*const label* uPtr = matrix.lduAddr().upperAddr().begin();
+        const label* lPtr = matrix.lduAddr().lowerAddr().begin();*/
+
+// for OpenFOAM int64,  fine level
+        const label* uPtr_of = matrix.lduAddr().upperAddr().begin();
+        const label* lPtr_of = matrix.lduAddr().lowerAddr().begin();
+        int upper_size = matrix.lduAddr().upperAddr().size();
+        int lower_size = matrix.lduAddr().lowerAddr().size();
+        upperAddr_int32 = new int[upper_size];
+        lowerAddr_int32 = new int[lower_size];
+        for (int i = 0; i < upper_size; ++i)
+        {
+            upperAddr_int32[i] = uPtr_of[i]; 
+        }
+        for (int i = 0; i < lower_size; ++i)
+        {
+            lowerAddr_int32[i] = lPtr_of[i];
+        }
+        int* uPtr = upperAddr_int32;
+        int* lPtr = lowerAddr_int32;
+// end for OpenFOAM int64
+
         const scalar* diagPtr =matrix.diag().begin();
 
         int coarseLevel_num = matrixLevels_.size();
@@ -120,6 +145,11 @@ Foam::SW_GAMGSolver::SW_GAMGSolver
                                                  &_amul_parameter[0],
                                                  _amul_parameter_clumn_size,
                                                  OFFSET_SIZE);
+// for OpenFOAM int64, coarse levels
+            //int** SW_GAMGSolver::upperAddrLevels_int32;
+            //int** SW_GAMGSolver::lowerAddrLevels_int32;
+            upperAddrLevels_int32 = new int*[MAX_SW_USING_CORASE_LEVELS];
+            lowerAddrLevels_int32 = new int*[MAX_SW_USING_CORASE_LEVELS];
 
             for(coarseLevel_i=0; coarseLevel_i<MAX_SW_USING_CORASE_LEVELS-1; coarseLevel_i++)
             {
@@ -128,8 +158,28 @@ Foam::SW_GAMGSolver::SW_GAMGSolver
                 nFaces = tmpmatrix.upper().size();
                 upperPtr = tmpmatrix.upper().begin();
                 lowerPtr = tmpmatrix.lower().begin();
-                uPtr = tmpmatrix.lduAddr().upperAddr().begin();
-                lPtr = tmpmatrix.lduAddr().lowerAddr().begin();
+                //uPtr = tmpmatrix.lduAddr().upperAddr().begin();???
+                //lPtr = tmpmatrix.lduAddr().lowerAddr().begin();???
+
+// for OpenFOAM int64, coarse levels
+                uPtr_of = tmpmatrix.lduAddr().upperAddr().begin();
+                lPtr_of = tmpmatrix.lduAddr().lowerAddr().begin();
+                upper_size = tmpmatrix.lduAddr().upperAddr().size();
+                lower_size = tmpmatrix.lduAddr().lowerAddr().size();
+                upperAddrLevels_int32[coarseLevel_i] = new int[upper_size];
+                lowerAddrLevels_int32[coarseLevel_i] = new int[lower_size];
+                for (int i = 0; i < upper_size; ++i)
+                {
+                    upperAddrLevels_int32[coarseLevel_i][i] = uPtr_of[i];
+                }
+                for (int i = 0; i < lower_size; ++i)
+                {
+                    lowerAddrLevels_int32[coarseLevel_i][i] = lPtr_of[i];
+                }
+                uPtr = upperAddrLevels_int32[coarseLevel_i];
+                lPtr = lowerAddrLevels_int32[coarseLevel_i];
+// end for OpenFOAM int64
+
                 diagPtr = tmpmatrix.diag().begin();
 
                 _amul_parameter[coarseLevel_i+1].diagPtr = (SCALAR*)(&diagPtr[0]);

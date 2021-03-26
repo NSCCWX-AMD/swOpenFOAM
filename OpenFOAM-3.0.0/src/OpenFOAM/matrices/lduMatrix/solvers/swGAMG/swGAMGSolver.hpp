@@ -83,6 +83,11 @@ class SW_GAMGSolver : public GAMGSolver {
     static amul_para *_amul_parameter ;
     static int _coarseLevel;
 
+    static int* upperAddr_int32;
+    static int* lowerAddr_int32;
+    static int** upperAddrLevels_int32;
+    static int** lowerAddrLevels_int32;
+
     //- determine using smoother or slover in the coarest level
     bool usingSmootherCoarest_;
     TypeName("swGAMG");

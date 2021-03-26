@@ -3,7 +3,7 @@
 #include "swField_host.h"
 
 #if(SWTIMER)
-#include "Timers.hpp"
+//#include "Timers.hpp"
 #endif
 
 
@@ -25,6 +25,14 @@ void dot <vector, tensor>
     const tensor * __restrict__ f3P = (f2).begin();
 
     label i = (res).size();
+
+#if 1
+{
+    printf("swField vector dot tensor call\n");
+    printf("i=%ld\n", i);
+    std::exit(0);
+}
+#endif
 
     swVectorDotTensor data;
 
@@ -57,6 +65,14 @@ void dot(Field<typename innerProduct<vector, vector>::type>& res, const UList<ve
     const vector * __restrict__ f3P = (f2).begin();
     label i = (res).size();
     swVectorDotTensor data;
+
+#if 1
+{
+    printf("swField vector dot vector call\n");
+    printf("i=%ld\n", i);
+    std::exit(0);
+}
+#endif
 
     if (i > 2000) {
         data.size = i;

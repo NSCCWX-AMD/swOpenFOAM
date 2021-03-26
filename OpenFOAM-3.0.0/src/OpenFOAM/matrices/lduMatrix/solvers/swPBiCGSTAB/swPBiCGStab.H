@@ -66,6 +66,9 @@ class SW_PBiCGSTAB
         static amul_para *_amul_parameter;
         static int _coarseLevel;
 
+        static int* upperAddr_int32;
+        static int* lowerAddr_int32;
+
 
 public:
 

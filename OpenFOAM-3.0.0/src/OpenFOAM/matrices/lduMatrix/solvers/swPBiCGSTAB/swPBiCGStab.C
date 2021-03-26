@@ -49,6 +49,9 @@ namespace Foam
     int SW_PBiCGSTAB::if_first = 1;
     refilltion *SW_PBiCGSTAB::_refill;
     int SW_PBiCGSTAB::_coarseLevel;
+
+    int* SW_PBiCGSTAB::upperAddr_int32;
+    int* SW_PBiCGSTAB::lowerAddr_int32;
 }
 
 
@@ -78,8 +81,29 @@ Foam::SW_PBiCGSTAB::SW_PBiCGSTAB
     register label nCells = matrix.diag().size();
     const scalar* upperPtr = matrix.upper().begin();
     const scalar* lowerPtr = matrix.lower().begin();
-    const label* uPtr = matrix.lduAddr().upperAddr().begin();
-    const label* lPtr = matrix.lduAddr().lowerAddr().begin();
+    /*const label* uPtr = matrix.lduAddr().upperAddr().begin();
+    const label* lPtr = matrix.lduAddr().lowerAddr().begin();*/
+
+    const label* uPtr_of = matrix.lduAddr().upperAddr().begin();
+    const label* lPtr_of = matrix.lduAddr().lowerAddr().begin();
+    int upper_size = matrix.lduAddr().upperAddr().size();
+    int lower_size = matrix.lduAddr().lowerAddr().size();
+    upperAddr_int32 = new int[upper_size];
+    lowerAddr_int32 = new int[lower_size]; 
+    for (int i = 0; i < upper_size; ++i)
+    {
+        upperAddr_int32[i] = uPtr_of[i];
+    }
+    for (int i = 0; i < lower_size; ++i)
+    {
+        lowerAddr_int32[i] = lPtr_of[i];
+    }
+    int* uPtr = upperAddr_int32;
+    int* lPtr = lowerAddr_int32;
+#if 1  // check
+    //
+#endif
+
     const scalar* diagPtr =matrix.diag().begin();
     const int coarseLevel_num = 0 ;
     if(if_first)

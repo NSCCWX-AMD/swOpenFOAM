@@ -89,18 +89,18 @@ extern int CG_signals[];
 
 void swVectorDotTensor_slave(swVectorDotTensor * data) {
 
-    scalar *f1P = data->f1P; //res;
-    scalar *f2P = data->f2P; //vector
-    scalar *f3P = data->f3P; //tensor;
-    const label size = data->size; // how many vectors over all
-    const label vector_dim = data->vector_dim;
-    const label tensor_dim = data->tensor_dim;
+    SCALAR *f1P = data->f1P; //res;
+    SCALAR *f2P = data->f2P; //vector
+    SCALAR *f3P = data->f3P; //tensor;
+    const LABEL size = data->size; // how many vectors over all
+    const LABEL vector_dim = data->vector_dim;
+    const LABEL tensor_dim = data->tensor_dim;
 
-    volatile label nVector = (size + 63) / 64;
-    volatile label segStart = nVector * _MYID;
+    volatile LABEL nVector = (size + 63) / 64;
+    volatile LABEL segStart = nVector * _MYID;
 
     // take care of the array tail
-    volatile label segEnd;
+    volatile LABEL segEnd;
     if ((nVector * _MYID + nVector) < size) {
         segEnd = nVector * _MYID + nVector;
     } else {
@@ -112,11 +112,11 @@ void swVectorDotTensor_slave(swVectorDotTensor * data) {
         }
     }
 
-    const label nPerCycle0 = 512;
+    const LABEL nPerCycle0 = 512;
 
-    scalar f1P_ldm[nPerCycle0 * 3];
-    scalar f2P_ldm[nPerCycle0 * 3];
-    scalar f3P_ldm[nPerCycle0 * 9];
+    SCALAR f1P_ldm[nPerCycle0 * 3];
+    SCALAR f2P_ldm[nPerCycle0 * 3];
+    SCALAR f3P_ldm[nPerCycle0 * 9];
 
     int nCycle0 = nVector / nPerCycle0;
     if (nCycle0 <= 0) {
@@ -197,17 +197,17 @@ void swVectorDotTensor_slave(swVectorDotTensor * data) {
 
 void swVectorDotVector_slave(swVectorDotTensor * data) {
 
-    scalar *f1P = data->f1P; //res;
-    scalar *f2P = data->f2P; //vector
-    scalar *f3P = data->f3P; //tensor;
-    const label size = data->size; // how many vectors over all
-    const label vector_dim = data->vector_dim;
+    SCALAR *f1P = data->f1P; //res;
+    SCALAR *f2P = data->f2P; //vector
+    SCALAR *f3P = data->f3P; //tensor;
+    const LABEL size = data->size; // how many vectors over all
+    const LABEL vector_dim = data->vector_dim;
 
-    volatile label nVector = (size + 63) / 64;
-    volatile label segStart = nVector * _MYID;
+    volatile LABEL nVector = (size + 63) / 64;
+    volatile LABEL segStart = nVector * _MYID;
 
     // take care of the array tail
-    volatile label segEnd;
+    volatile LABEL segEnd;
     if ((nVector * _MYID + nVector) < size) {
         segEnd = nVector * _MYID + nVector;
     } else {
@@ -219,11 +219,11 @@ void swVectorDotVector_slave(swVectorDotTensor * data) {
         }
     }
 
-    const label nPerCycle0 = 512;
+    const LABEL nPerCycle0 = 512;
 
-    scalar f1P_ldm[nPerCycle0 * 1];
-    scalar f2P_ldm[nPerCycle0 * 3];
-    scalar f3P_ldm[nPerCycle0 * 3];
+    SCALAR f1P_ldm[nPerCycle0 * 1];
+    SCALAR f2P_ldm[nPerCycle0 * 3];
+    SCALAR f3P_ldm[nPerCycle0 * 3];
 
     int nCycle0 = nVector / nPerCycle0;
     if (nCycle0 <= 0) {
@@ -288,16 +288,16 @@ void swVectorDotVector_slave(swVectorDotTensor * data) {
 
 void swVectorMulScalar_slave(swVectorDotTensor * data) {
 
-    scalar *f1P = data->f1P; //res;
-    scalar *f2P = data->f2P; //vector
-    const label size = data->size; // how many vectors over all
-    const scalar s1 = data->s1;
+    SCALAR *f1P = data->f1P; //res;
+    SCALAR *f2P = data->f2P; //vector
+    const LABEL size = data->size; // how many vectors over all
+    const SCALAR s1 = data->s1;
 
-    volatile label nVector = (size + 63) / 64;
-    volatile label segStart = nVector * _MYID;
+    volatile LABEL nVector = (size + 63) / 64;
+    volatile LABEL segStart = nVector * _MYID;
 
     // take care of the array tail
-    volatile label segEnd;
+    volatile LABEL segEnd;
     if ((nVector * _MYID + nVector) < size) {
         segEnd = nVector * _MYID + nVector;
     } else {
@@ -309,10 +309,10 @@ void swVectorMulScalar_slave(swVectorDotTensor * data) {
         }
     }
 
-    const label nPerCycle0 = 7168;
+    const LABEL nPerCycle0 = 7168;
 
 
-    scalar f2P_ldm[nPerCycle0];
+    SCALAR f2P_ldm[nPerCycle0];
 
 
     int nCycle0 = nVector / nPerCycle0;

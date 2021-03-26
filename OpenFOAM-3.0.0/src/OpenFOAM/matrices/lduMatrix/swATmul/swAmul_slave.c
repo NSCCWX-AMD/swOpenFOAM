@@ -93,7 +93,7 @@ void ATmul_Upper_Lowwer(const amul_translate_array_ptr parameter_in)
     volatile amul_translate_array parameter;
 
     get_reply = 0;
-    dma_desc dma_parameter;
+    /*dma_desc dma_parameter;
     dma_set_op(&dma_parameter,DMA_GET);
     dma_set_reply(&dma_parameter,&get_reply);
     dma_set_stepsize(&dma_parameter,0);
@@ -103,7 +103,14 @@ void ATmul_Upper_Lowwer(const amul_translate_array_ptr parameter_in)
 
     dma(dma_parameter, (long)&(parameter_in[my_id]), (long)&parameter);
 
-    dma_wait(&get_reply,1);     ///get the parameter
+    dma_wait(&get_reply,1);     ///get the parameter*/
+    athread_get(PE_MODE,
+                &(parameter_in[my_id]),
+                &parameter,
+                sizeof(amul_translate_array),
+                (int*) &get_reply,
+                0,0,0);
+    while(get_reply!=1);
 
     const LABEL block_boundary_size = (1<<parameter.offset_size);
     const LABEL offset_mask = (0xffffffff << parameter.offset_size);
@@ -146,12 +153,12 @@ void ATmul_Upper_Lowwer(const amul_translate_array_ptr parameter_in)
         while(get_reply!=1);
 
         //init dma descriptor of psi
-        dma_desc dma_psi;
+        /*dma_desc dma_psi;
         dma_set_op(&dma_psi,DMA_GET);
         dma_set_reply(&dma_psi,&get_reply);
         dma_set_stepsize(&dma_psi,0);
         dma_set_mode(&dma_psi,PE_MODE);
-        dma_set_mask(&dma_psi,0xff);
+        dma_set_mask(&dma_psi,0xff);*/
 
         LABEL index;
         for (index=0; index<block_num;)
@@ -186,15 +193,21 @@ void ATmul_Upper_Lowwer(const amul_translate_array_ptr parameter_in)
 
                 get_reply = 0;
 
-                dma_set_size(&dma_psi, sizeof(SCALAR)*psi_size);
-
-                dma(dma_psi, (long)(parameter_psiPtr + psi_begin_now), (long)psiPtr_slave);
+                /*dma_set_size(&dma_psi, sizeof(SCALAR)*psi_size);
+                dma(dma_psi, (long)(parameter_psiPtr + psi_begin_now), (long)psiPtr_slave);*/
+                athread_get(PE_MODE,
+                        parameter_psiPtr + psi_begin_now,
+                        psiPtr_slave,
+                        sizeof(SCALAR)*psi_size,
+                        (int*) &get_reply,
+                        0,0,0);
+                while(get_reply!=1);
 
                 calculate_size = amul_translate_ptr_slave[index].size;
                 half_calculate_size = calculate_size >> 1;
                 // while(get_reply!=1);
 
-                dma_wait(&get_reply,1);
+                //dma_wait(&get_reply,1);
 
                 if((psi_begin_now & offset_mask) == Apsi_begin_now)
                 {

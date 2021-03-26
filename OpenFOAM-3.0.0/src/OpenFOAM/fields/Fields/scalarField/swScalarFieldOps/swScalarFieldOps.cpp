@@ -43,9 +43,27 @@ void multiply
     const scalar* __restrict__ f3P = (f2).begin();
     label i = (res).size();
 
+#if 1
+{
+    printf("swScalarFieldOps multiply ncall\n");
+    printf("accUsingSize=%d\n", accUsingSize);
+    std::exit(0);
+}
+#endif
+
     // test the slave function
     if(i > accUsingSize)
     {
+#if 1
+{
+    static int ncall = 0;
+    ncall++;
+    if(ncall%1==0)
+    {
+        printf("swScalarFieldOps multiply ncall=%d\n", ncall);
+    }
+}
+#endif
         MVM_Arrays paras;
         init_MVM_Arrays(&paras, i);
         paras.A1Ptr = (scalar*) f1P;
@@ -75,6 +93,14 @@ void divide
     const scalar* __restrict__ f2P = (f1).begin();
     const scalar* __restrict__ f3P = (f2).begin();
     label i = (res).size();
+
+#if 1
+{
+    printf("swScalarFieldOps divide ncall\n");
+    printf("accUsingSize=%d\n", accUsingSize);
+    std::exit(0);
+}
+#endif
 
     // test the slave function
     if(i > accUsingSize)

@@ -1,167 +1,168 @@
-#ifndef SUNWAYMACROS_H
-#define SUNWAYMACROS_H
+#ifndef SWMACRO_H
+#define SWMACRO_H
 
-#include "mpi.h"
-#include "basicTypes.h"
+#include <stdio.h>
+#include <stdlib.h>
 
-#define MAX_CARED_RERR (1e-9)
-#define MIN_FP (1e-15)
-// this macro takes two arrays, in which the element
-// can be the operand of "mag" that returns a scalar.
-#define HOST2SLAVE_MPI_CHECK(var1_, var2_) \
-{ \
-    double max_rerr=0; \
-    forAll(var1_, celli) \
-    { \
-        double mag1 = mag(var1_[celli]); \
-        double mag2 = mag(var2_[celli]); \
-        if(mag1 != 0) \
-        { \
-            double rerr=fabs((mag2-mag1)/mag1); \
-            max_rerr = (max_rerr > rerr) ? max_rerr : rerr; \
-        } \
-        else if(mag2 > MIN_FP) \
-        { \
-            max_rerr = 1; \
-            break; \
-        } \
-    } \
-    double max_rerr_buf = max_rerr; \
-    MPI_Reduce(&max_rerr_buf, \
-               &max_rerr, \
-               1, \
-               MPI_DOUBLE, \
-               MPI_SUM, \
-               0, \
-               MPI_COMM_WORLD \
-              ); \
-    int rank; \
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank); \
-    if(rank == 0) \
-    if(max_rerr > MAX_CARED_RERR) \
-        std::cout<<"***Error at " \
-                 <<__FILE__<<__LINE__<<":"<<std::endl \
-                 <<"max relative error:" \
-                 <<max_rerr<<", exceeds "<<MAX_CARED_RERR \
-                 <<std::endl; \
-}
+//#include "utilities.h"
 
-// this macro takes two arrays, in which the element
-// can be the operand of "mag" that returns a scalar.
-#define HOST2SLAVE_CHECK(var1_, var2_) \
-{ \
-    double max_rerr=0; \
-    forAll(var1_, celli) \
-    { \
-        double mag1 = mag(var1_[celli]); \
-        double mag2 = mag(var2_[celli]); \
-        if(mag1 != 0) \
-        { \
-            double rerr=fabs((mag2-mag1)/mag1); \
-            max_rerr = (max_rerr > rerr) ? max_rerr : rerr; \
-        } \
-        else if(mag2 > MIN_FP) \
-        { \
-            max_rerr = 1; \
-            break; \
-        } \
-    } \
-    if(max_rerr > MAX_CARED_RERR) \
-        std::cout<<"***Error at " \
-                 <<__FILE__<<__LINE__<<":"<<std::endl \
-                 <<"max relative error:" \
-                 <<max_rerr<<", exceeds "<<MAX_CARED_RERR \
-                 <<std::endl; \
-}
+#define BLOCKNUM64K 64
+#define SAFELDM 24000
+#define EPS 1e-5
+#define MAXSTEPS 6
 
-// this macro takes two arrays, in which the element
-// can be the operand of "mag" that returns a scalar.
-#define HOST2SLAVE_CHECK_DETAIL(var1_, var2_) \
-{ \
-    double max_rerr=0; \
-    forAll(var1_, celli) \
-    { \
-        double mag1 = mag(var1_[celli]); \
-        double mag2 = mag(var2_[celli]); \
-        if(mag1 != 0) \
-        { \
-            double rerr=fabs((mag2-mag1)/mag1); \
-            max_rerr = (max_rerr > rerr) ? max_rerr : rerr; \
-            if(rerr > MAX_CARED_RERR) \
-                std::cout<<"mag1="<<mag1 \
-                         <<", mag2="<<mag2<<std::endl; \
-        } \
-        else if(mag2 > MIN_FP) \
-        { \
-            std::cout<<"mag1="<<mag1 \
-                     <<", mag2="<<mag2<<std::endl; \
-            max_rerr = 1; \
-            break; \
-        } \
-    } \
-    if(max_rerr > MAX_CARED_RERR) \
-        std::cout<<"***Error at " \
-                 <<__FILE__<<__LINE__<<":"<<std::endl \
-                 <<"max relative error:" \
-                 <<max_rerr<<", exceeds "<<MAX_CARED_RERR \
-                 <<std::endl; \
-}
+// define the pattern of iterator
+#define E2V 0
+#define V2E 1
+#define ARRAY 2
+//#define DEBUG
 
-// this macro takes two scalars
-#define HOST2SLAVE_MPI_COMPARE(mag1, mag2) \
-{ \
-    double rerr = 0; \
-    if(mag1 != 0) \
-    { \
-        rerr=fabs((mag2-mag1)/mag1); \
-    } \
-    else if(fabs(mag2) > MIN_FP) \
-    { \
-        rerr = 1.0; \
-    } \
-    double rerr_buf = rerr; \
-    MPI_Reduce(&rerr_buf, \
-               &rerr, \
-               1, \
-               MPI_DOUBLE, \
-               MPI_SUM, \
-               0, \
-               MPI_COMM_WORLD \
-              ); \
-    int rank; \
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank); \
-    if(rank == 0) \
-    if(rerr > MAX_CARED_RERR) \
-        std::cout<<"***Error at " \
-                 <<__FILE__<<__LINE__<<":"<<std::endl \
-                 <<"relative error:" \
-                 <<rerr<<", exceeds "<<MAX_CARED_RERR \
-                 <<std::endl; \
-}
+#ifdef DEBUG
+#define LOG(format, ...) \
+  printf("File: " __FILE__ ",Line: %05d: " format "\n", __LINE__, ##__VA_ARGS__)
+#else
+#define LOG(format, ...)
+#endif
 
-// this macro takes two scalars
-#define HOST2SLAVE_COMPARE(mag1, mag2) \
-{ \
-    double rerr = 0; \
-    if(mag1 != 0) \
-    { \
-        rerr=fabs((mag2-mag1)/mag1); \
-        if(rerr > MAX_CARED_RERR) \
-            std::cout<<"mag1="<<mag1 \
-                     <<", mag2="<<mag2<<std::endl; \
-    } \
-    else if(fabs(mag2) > MIN_FP) \
-    { \
-        rerr = 1.0; \
-        std::cout<<"mag1="<<mag1 \
-                 <<", mag2="<<mag2<<std::endl; \
-    } \
-    if(rerr > MAX_CARED_RERR) \
-        std::cout<<"***Error at " \
-                 <<__FILE__<<__LINE__<<":"<<std::endl \
-                 <<"relative error:" \
-                 <<rerr<<", exceeds "<<MAX_CARED_RERR \
-                 <<std::endl; \
-}
+typedef enum
+{
+  LDU = 1,
+  CSR
+} MatrixFormat;
+
+// typedef int swInt;
+// typedef int label32;
+// typedef long label64;
+// typedef double swFloat;
+// typedef float swFloat32;
+// typedef double swFloat64;
+
+// standard error dump to file
+#define dumpErrorToFile(file, ...)                                   \
+  {                                                                  \
+    fprintf(file, "\n***Error in function \"%s\":\n", __FUNCTION__); \
+    fprintf(file, __VA_ARGS__);                                      \
+    fprintf(file, "\n***at %s +%05d\n\n", __FILE__, __LINE__);       \
+    fflush(file);                                                    \
+  }
+
+// standard error dump to stderr
+#define dumpError(...)                   \
+  {                                      \
+    dumpErrorToFile(stderr, __VA_ARGS__) \
+  }
+
+// print array
+#define printArray(unitFmt, array, length) \
+  {                                        \
+    printf("%s(%d):{", #array, length);    \
+    size_t i;                              \
+    for (i = 0; i < (length); i++)         \
+    {                                      \
+      printf(" ");                         \
+      printf(unitFmt, (array)[i]);         \
+    }                                      \
+    printf("}\n");                         \
+  }
+
+// #define MAX(x, y) ( ((x) > (y)) ? (x) : (y) )
+// #define MIN(x, y) ( ((x) < (y)) ? (x) : (y) )
+
+// bisection table search
+#define biSearch(posi, table, value, length) \
+  {                                          \
+    size_t ubound, lbound, mbound;           \
+    lbound = 0;                              \
+    ubound = (length)-1;                     \
+    mbound = lbound;                         \
+    while (lbound < ubound)                  \
+    {                                        \
+      if ((table)[mbound] < (value))         \
+        lbound = mbound + 1;                 \
+      else if ((table)[mbound] > (value))    \
+        ubound = mbound - 1;                 \
+      else                                   \
+        break;                               \
+      mbound = (lbound + ubound) >> 1;       \
+    }                                        \
+    if ((value) == (table)[mbound])          \
+      (posi) = mbound;                       \
+    else                                     \
+    {                                        \
+      (posi) = -1;                           \
+    }                                        \
+  }
+
+// get precise time on unix
+#define getTime(time)                                                   \
+  {                                                                     \
+    struct timeval timer;                                               \
+    gettimeofday(&timer, 0);                                            \
+    time = ((double)(timer.tv_sec) + (double)(timer.tv_usec) * 1.0e-6); \
+  }
+
+// new, delete and resize an arrays
+#define NEW(type, num) ((type *)malloc((num) * sizeof(type)))
+
+#define DELETE(array) \
+  {                   \
+    free(array);      \
+  }
+
+#define RESIZE(type, array, numOld, numNew)                             \
+  {                                                                     \
+    if (numOld == 0)                                                    \
+    {                                                                   \
+      if (array != NULL)                                                \
+      {                                                                 \
+        printf("***Warning: declare an un-null array with zero size!"); \
+        DELETE(array);                                                  \
+      }                                                                 \
+      (array) = NEW(type, numNew);                                      \
+    }                                                                   \
+    else if (numOld != 0)                                               \
+    {                                                                   \
+      type *arrayTmp = NEW(type, numOld);                               \
+      size_t i = numOld;                                                \
+      while (i--)                                                       \
+      {                                                                 \
+        arrayTmp[i] = array[i];                                         \
+      }                                                                 \
+      DELETE(array);                                                    \
+      (array) = NEW(type, numNew);                                      \
+      i = numOld;                                                       \
+      while (i--)                                                       \
+      {                                                                 \
+        array[i] = arrayTmp[i];                                         \
+      }                                                                 \
+      DELETE(arrayTmp);                                                 \
+    }                                                                   \
+  }
+
+#define checkResult(array1, array2, count)                                     \
+  {                                                                            \
+    std::cout << "check result..." << std::endl;                               \
+    for (int i = 0; i < (count); i++)                                          \
+    {                                                                          \
+      if (std::fabs(array1[i] - array2[i]) > EPS)                              \
+      {                                                                        \
+        if (array1[i] == 0)                                                    \
+        {                                                                      \
+          if (std::fabs(array2[i]) > EPS)                                      \
+          {                                                                    \
+            printf(                                                            \
+                "Error on index[%d], %.8f, %.8f\n", i, array1[i], array2[i]);  \
+            std::exit(-1);                                                     \
+          }                                                                    \
+        }                                                                      \
+        else if (std::fabs((array1[i] - array2[i]) / array1[i]) > EPS)         \
+        {                                                                      \
+          printf("Error on index[%d], %.8f, %.8f\n", i, array1[i], array2[i]); \
+          std::exit(-1);                                                       \
+        }                                                                      \
+      }                                                                        \
+    }                                                                          \
+    std::cout << "The result is correct!" << std::endl;                        \
+  }
 
 #endif
