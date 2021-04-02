@@ -30,7 +30,7 @@ Description
 namespace Foam
 {
 
-template <>
+//template <>
 void multiply
 (
     Field<scalar>& res,

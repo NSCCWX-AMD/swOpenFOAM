@@ -310,11 +310,6 @@ void OpFunc                                                                   \
     const UList<Type1>& f1,                                                   \
     const UList<Type2>& f2                                                    \
 ){                                                                             \
-    if(sizeof(ReturnType)==8 && sizeof(Type1)==8 && sizeof(Type2)==8)\
-        {\
-        printf("BINARY_OPERATOR is called\n");   \
-        std::exit(0);\
-    }\
     TFOR_ALL_F_OP_F_OP_F(ReturnType, res, =, Type1, f1, Op, Type2, f2)        \
 }                                                                             \
                                                                               \
