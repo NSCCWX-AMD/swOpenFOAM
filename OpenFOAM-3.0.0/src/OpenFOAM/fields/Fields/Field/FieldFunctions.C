@@ -28,6 +28,7 @@ License
 
 #define TEMPLATE template<class Type>
 #include "FieldFunctionsM.C"
+#include "swScalarFieldOps.hpp"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -620,6 +621,9 @@ BINARY_TYPE_FUNCTION(Type, Type, Type, cmptDivide)
 /* * * * * * * * * * * * * * * * Global operators  * * * * * * * * * * * * * */
 
 UNARY_OPERATOR(Type, Type, -, negate)
+
+// for sw
+BINARY_OPERATOR_SW(scalar, scalar, scalar, *, multiply)
 
 BINARY_OPERATOR(Type, Type, scalar, *, multiply)
 BINARY_OPERATOR(Type, scalar, Type, *, multiply)

@@ -243,6 +243,61 @@ tmp<Field<ReturnType> > Func                                                  \
     BINARY_TYPE_FUNCTION_SF(ReturnType, Type1, Type2, Func)                   \
     BINARY_TYPE_FUNCTION_FS(ReturnType, Type1, Type2, Func)
 
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+#define BINARY_OPERATOR_SW(ReturnType, Type1, Type2, Op, OpFunc)              \
+                                                                             \
+TEMPLATE                                                                     \
+tmp<Field<ReturnType> > operator Op                                           \
+(                                                                             \
+    const UList<Type1>& f1,                                                   \
+    const UList<Type2>& f2                                                    \
+)                                                                             \
+{                                                                             \
+    tmp<Field<ReturnType> > tRes(new Field<ReturnType>(f1.size()));           \
+    OpFunc(tRes(), f1, f2);                                                   \
+    return tRes;                                                              \
+}                                                                             \
+                                                                              \
+TEMPLATE                                                                      \
+tmp<Field<ReturnType> > operator Op                                           \
+(                                                                             \
+    const UList<Type1>& f1,                                                   \
+    const tmp<Field<Type2> >& tf2                                             \
+)                                                                             \
+{                                                                             \
+    tmp<Field<ReturnType> > tRes = reuseTmp<ReturnType, Type2>::New(tf2);     \
+    OpFunc(tRes(), f1, tf2());                                                \
+    reuseTmp<ReturnType, Type2>::clear(tf2);                                  \
+    return tRes;                                                              \
+}                                                                             \
+                                                                              \
+TEMPLATE                                                                      \
+tmp<Field<ReturnType> > operator Op                                           \
+(                                                                             \
+    const tmp<Field<Type1> >& tf1,                                            \
+    const UList<Type2>& f2                                                    \
+)                                                                             \
+{                                                                             \
+    tmp<Field<ReturnType> > tRes = reuseTmp<ReturnType, Type1>::New(tf1);     \
+    OpFunc(tRes(), tf1(), f2);                                                \
+    reuseTmp<ReturnType, Type1>::clear(tf1);                                  \
+    return tRes;                                                              \
+}                                                                             \
+                                                                              \
+TEMPLATE                                                                      \
+tmp<Field<ReturnType> > operator Op                                           \
+(                                                                             \
+    const tmp<Field<Type1> >& tf1,                                            \
+    const tmp<Field<Type2> >& tf2                                             \
+)                                                                             \
+{                                                                             \
+    tmp<Field<ReturnType> > tRes =                                            \
+        reuseTmpTmp<ReturnType, Type1, Type1, Type2>::New(tf1, tf2);          \
+    OpFunc(tRes(), tf1(), tf2());                                             \
+    reuseTmpTmp<ReturnType, Type1, Type1, Type2>::clear(tf1, tf2);            \
+    return tRes;                                                              \
+}
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -254,8 +309,12 @@ void OpFunc                                                                   \
     Field<ReturnType>& res,                                                   \
     const UList<Type1>& f1,                                                   \
     const UList<Type2>& f2                                                    \
-)                                                                             \
-{                                                                             \
+){                                                                             \
+    if(sizeof(ReturnType)==8 && sizeof(Type1)==8 && sizeof(Type2)==8)\
+        {\
+        printf("BINARY_OPERATOR is called\n");   \
+        std::exit(0);\
+    }\
     TFOR_ALL_F_OP_F_OP_F(ReturnType, res, =, Type1, f1, Op, Type2, f2)        \
 }                                                                             \
                                                                               \

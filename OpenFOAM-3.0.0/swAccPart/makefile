@@ -20,7 +20,7 @@ all:
 	@cd swDiagonalPreconditioner && make default
 	@cd swDILUPreconditioner && make default
 	@cd srPCG && make default
-	#@cd swScalarFieldOps && make default
+	@cd swScalarFieldOps && make default
 	#@cd swField && make default
 #   ////@cd swGaussGrad && make default
 ##	////@cd swSurfaceIntegrate &&  make default
@@ -45,7 +45,7 @@ cleanAll:
 	@cd swDiagonalPreconditioner && make cleanObjs
 	@cd swDILUPreconditioner && make cleanObjs
 	@cd srPCG && make cleanObjs
-	#@cd swScalarFieldOps && make cleanObjs
+	@cd swScalarFieldOps && make cleanObjs
 	#@cd swField && make cleanObjs
 	#@cd swGaussGrad && make cleanObjs
 	#@cd swSurfaceIntegrate &&  make cleanObjs
