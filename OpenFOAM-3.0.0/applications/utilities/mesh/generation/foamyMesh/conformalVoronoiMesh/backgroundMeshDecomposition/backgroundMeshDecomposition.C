@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -61,14 +61,6 @@ Foam::autoPtr<Foam::mapDistribute> Foam::backgroundMeshDecomposition::buildMap
         nSend[procI]++;
     }
 
-    // Send over how many I need to receive
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    labelListList sendSizes(Pstream::nProcs());
-
-    sendSizes[Pstream::myProcNo()] = nSend;
-
-    combineReduce(sendSizes, UPstream::listEq());
 
     // 2. Size sendMap
     labelListList sendMap(Pstream::nProcs());
@@ -88,6 +80,11 @@ Foam::autoPtr<Foam::mapDistribute> Foam::backgroundMeshDecomposition::buildMap
         sendMap[procI][nSend[procI]++] = i;
     }
 
+    // 4. Send over how many I need to receive
+    labelList recvSizes;
+    Pstream::exchangeSizes(sendMap, recvSizes);
+
+
     // Determine receive map
     // ~~~~~~~~~~~~~~~~~~~~~
 
@@ -105,7 +102,7 @@ Foam::autoPtr<Foam::mapDistribute> Foam::backgroundMeshDecomposition::buildMap
     {
         if (procI != Pstream::myProcNo())
         {
-            label nRecv = sendSizes[procI][Pstream::myProcNo()];
+            label nRecv = recvSizes[procI];
 
             constructMap[procI].setSize(nRecv);
 
@@ -834,24 +831,14 @@ Foam::backgroundMeshDecomposition::backgroundMeshDecomposition
 {
     if (!Pstream::parRun())
     {
-        FatalErrorIn
-        (
-            "Foam::backgroundMeshDecomposition::backgroundMeshDecomposition"
-            "("
-                "const dictionary& coeffsDict, "
-                "const conformalVoronoiMesh& foamyHexMesh"
-            ")"
-        )
+        FatalErrorInFunction
             << "This cannot be used when not running in parallel."
             << exit(FatalError);
     }
 
     if (!decomposerPtr_().parallelAware())
     {
-        FatalErrorIn
-        (
-            "void Foam::backgroundMeshDecomposition::initialRefinement() const"
-        )
+        FatalErrorInFunction
             << "You have selected decomposition method "
             << decomposerPtr_().typeName
             << " which is not parallel aware." << endl
@@ -1217,14 +1204,7 @@ Foam::labelList Foam::backgroundMeshDecomposition::processorNearestPosition
 
         if (ptNearestProc[pI] < 0)
         {
-            FatalErrorIn
-            (
-                "Foam::labelList"
-                "Foam::backgroundMeshDecomposition::processorNearestPosition"
-                "("
-                    "const List<point>& pts"
-                ") const"
-            )
+            FatalErrorInFunction
                 << "The position " << pts[pI]
                 << " did not find a nearest point on the background mesh."
                 << exit(FatalError);

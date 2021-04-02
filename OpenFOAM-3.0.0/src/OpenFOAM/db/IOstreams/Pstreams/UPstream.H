@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2014 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -181,17 +181,30 @@ private:
 
     // Private data
 
+        //- By default this is not a parallel run
         static bool parRun_;
+
+        //- Standard transfer message type
         static int msgType_;
 
         // Communicator specific data
 
+        //- Free communicators
         static LIFOStack<label> freeComms_;
+
+        //- My processor number
         static DynamicList<int> myProcNo_;
+
+        //- List of process IDs
         static DynamicList<List<int> > procIDs_;
+
+        //- Parent communicator
         static DynamicList<label> parentCommunicator_;
 
+        //- Linear communication schedule
         static DynamicList<List<commsStruct> > linearCommunication_;
+
+        //- Multi level communication schedule
         static DynamicList<List<commsStruct> > treeCommunication_;
 
 
@@ -476,7 +489,15 @@ public:
         //- Abort program
         static void abort();
 
-
+        //- Exchange label with all processors (in the communicator).
+        //  sendData[procI] is the label to send to procI.
+        //  After return recvData contains the data from the other processors.
+        static void allToAll
+        (
+            const labelUList& sendData,
+            labelUList& recvData,
+            const label communicator = 0
+        );
 };
 
 

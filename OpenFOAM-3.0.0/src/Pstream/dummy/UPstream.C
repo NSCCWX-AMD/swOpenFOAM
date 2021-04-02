@@ -81,6 +81,17 @@ void Foam::reduce(scalar&, const sumOp<scalar>&, const int, const label, label&)
 {}
 
 
+void Foam::UPstream::allToAll
+(
+    const labelUList& sendData,
+    labelUList& recvData,
+    const label communicator
+)
+{
+    recvData.assign(sendData);
+}
+
+
 void Foam::UPstream::allocatePstreamCommunicator
 (
     const label,

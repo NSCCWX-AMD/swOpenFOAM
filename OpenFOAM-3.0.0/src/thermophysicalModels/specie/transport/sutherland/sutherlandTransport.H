@@ -114,6 +114,9 @@ class sutherlandTransport
             const scalar mu2, const scalar T2
         );
 
+        //- Read coefficient from dictionary
+        scalar readCoeff(const word& coeffName, const dictionary& dict);
+
 
 public:
 
@@ -143,6 +146,9 @@ public:
 
         //- Construct from dictionary
         sutherlandTransport(const dictionary& dict);
+
+        //- Construct from base thermo and dictionary
+        sutherlandTransport(const Thermo& t,const dictionary& dict);
 
         //- Construct and return a clone
         inline autoPtr<sutherlandTransport> clone() const;
