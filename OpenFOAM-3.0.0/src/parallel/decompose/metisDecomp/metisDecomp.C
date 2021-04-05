@@ -73,7 +73,7 @@ Foam::label Foam::metisDecomp::decompose
 
     // processor weights initialised with no size, only used if specified in
     // a file
-    Field<floatScalar> processorWeights;
+    Field<scalar> processorWeights;
 
     // cell weights (so on the vertices of the dual)
     List<label> cellWeights;
@@ -193,15 +193,15 @@ Foam::label Foam::metisDecomp::decompose
         //}
     }
 
-    int ncon = 1;
+    label ncon = 1;
 
-    int nProcs = nProcessors_;
+    label nProcs = nProcessors_;
 
     // output: cell -> processor addressing
     finalDecomp.setSize(numCells);
 
     // output: number of cut edges
-    int edgeCut = 0;
+    label edgeCut = 0;
 
     if (method == "recursive")
     {
