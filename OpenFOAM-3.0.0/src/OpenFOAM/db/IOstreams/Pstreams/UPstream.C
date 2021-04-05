@@ -281,8 +281,8 @@ Foam::label Foam::UPstream::allocateCommunicator
     }
     parentCommunicator_[index] = parentIndex;
 
-    linearCommunication_[index] = calcLinearComm(procIDs_[index].size());
-    treeCommunication_[index] = calcTreeComm(procIDs_[index].size());
+    linearCommunication_[index] = List<commsStruct>(procIDs_[index].size());
+    treeCommunication_[index] = List<commsStruct>(procIDs_[index].size());
 
 
     if (doPstream && parRun())
@@ -376,6 +376,114 @@ Foam::label Foam::UPstream::procNo
 {
     label physProcID = UPstream::baseProcNo(currentComm, currentProcID);
     return procNo(myComm, physProcID);
+}
+
+
+template<>
+Foam::UPstream::commsStruct&
+Foam::UList<Foam::UPstream::commsStruct>::operator[](const label procID)
+{
+    UPstream::commsStruct& t = v_[procID];
+
+    if (t.allBelow().size() + t.allNotBelow().size() + 1 != size())
+    {
+        // Not yet allocated
+
+        label above(-1);
+        labelList below(0);
+        labelList allBelow(0);
+
+        if (size() < UPstream::nProcsSimpleSum)
+        {
+            // Linear schedule
+            if (procID == 0)
+            {
+                below.setSize(size()-1);
+                for (label procI = 1; procI < size(); procI++)
+                {
+                    below[procI-1] = procI;
+                }
+            }
+            else
+            {
+                above = 0;
+            }
+        }
+        else
+        {
+            // Use tree like schedule. For 8 procs:
+            // (level 0)
+            //      0 receives from 1
+            //      2 receives from 3
+            //      4 receives from 5
+            //      6 receives from 7
+            // (level 1)
+            //      0 receives from 2
+            //      4 receives from 6
+            // (level 2)
+            //      0 receives from 4
+            //
+            // The sends/receives for all levels are collected per processor
+            // (one send per processor; multiple receives possible) creating
+            // a table:
+            //
+            // So per processor:
+            // proc     receives from   sends to
+            // ----     -------------   --------
+            //  0       1,2,4           -
+            //  1       -               0
+            //  2       3               0
+            //  3       -               2
+            //  4       5               0
+            //  5       -               4
+            //  6       7               4
+            //  7       -               6
+
+            label mod = 0;
+
+            for (label step = 1; step < size(); step = mod)
+            {
+                mod = step * 2;
+
+                if (procID % mod)
+                {
+                    above = procID - (procID % mod);
+                    break;
+                }
+                else
+                {
+                    for
+                    (
+                        label j = procID + step;
+                        j < size() && j < procID + mod;
+                        j += step
+                    )
+                    {
+                        below.append(j);
+                    }
+                    for
+                    (
+                        label j = procID + step;
+                        j < size() && j < procID + mod;
+                        j++
+                    )
+                    {
+                        allBelow.append(j);
+                    }
+                }
+            }
+        }
+        t = UPstream::commsStruct(size(), procID, above, below, allBelow);
+    }
+    return t;
+}
+
+
+template<>
+const Foam::UPstream::commsStruct&
+Foam::UList<Foam::UPstream::commsStruct>::operator[](const label procID) const
+{
+    return const_cast<UList<UPstream::commsStruct>&>(*this).operator[](procID);
 }
 
 

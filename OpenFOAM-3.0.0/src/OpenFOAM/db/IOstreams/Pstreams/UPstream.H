@@ -504,6 +504,22 @@ public:
 Ostream& operator<<(Ostream&, const UPstream::commsStruct&);
 
 
+// Template specialisation for access of commsStruct
+template<>
+UPstream::commsStruct&
+UList<UPstream::commsStruct>::operator[](const label);
+template<>
+const UPstream::commsStruct&
+UList<UPstream::commsStruct>::operator[](const label) const;
+
+
+int tmp_char_all2all(
+                      char* sendBuf,
+                      int sendcount,
+                      char* recvBuf,
+                      int recvcount);
+
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam

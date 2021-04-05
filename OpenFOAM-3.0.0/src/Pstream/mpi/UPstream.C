@@ -712,4 +712,25 @@ void Foam::UPstream::freeTag(const word& s, const int tag)
 }
 
 
+int Foam::tmp_char_all2all(
+    char* sendBuf,
+    int sendcount,
+    char* recvBuf,
+    int recvcount
+)
+{
+    MPI_Alltoall(
+        sendBuf,
+        sendcount,
+        MPI_CHAR,
+        recvBuf,
+        recvcount,
+        MPI_CHAR,
+        MPI_COMM_WORLD
+    );
+
+    return 0;
+}
+
+
 // ************************************************************************* //

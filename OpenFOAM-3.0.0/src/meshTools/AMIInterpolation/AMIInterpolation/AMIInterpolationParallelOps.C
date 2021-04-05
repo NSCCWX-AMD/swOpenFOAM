@@ -427,7 +427,7 @@ Foam::AMIInterpolation<SourcePatch, TargetPatch>::calcProcMap
         }
     }
 
-
+#if 0
     // Send over how many faces I need to receive
     labelListList sendSizes(Pstream::nProcs());
     sendSizes[Pstream::myProcNo()].setSize(Pstream::nProcs());
@@ -463,6 +463,49 @@ Foam::AMIInterpolation<SourcePatch, TargetPatch>::calcProcMap
             }
         }
     }
+#endif
+
+#if 1
+    // Send over how many faces I need to receive
+    labelList sendSizes(Pstream::nProcs());
+    labelList recvSizes(Pstream::nProcs());
+    forAll(sendMap, procI)
+    {
+        sendSizes[procI] = sendMap[procI].size();
+    }
+
+    tmp_char_all2all(
+        (char*) sendSizes.data(),
+        sizeof(label),
+        (char*) recvSizes.data(),
+        sizeof(label)
+    );
+
+    // Determine order of receiving
+    labelListList constructMap(Pstream::nProcs());
+
+    // My local segment first
+    constructMap[Pstream::myProcNo()] = identity
+    (
+        sendMap[Pstream::myProcNo()].size()
+    );
+
+    label segmentI = constructMap[Pstream::myProcNo()].size();
+    forAll(constructMap, procI)
+    {
+        if (procI != Pstream::myProcNo())
+        {
+            // What I need to receive is what other processor is sending to me
+            label nRecv = recvSizes[procI];
+            constructMap[procI].setSize(nRecv);
+
+            for (label i = 0; i < nRecv; i++)
+            {
+                constructMap[procI][i] = segmentI++;
+            }
+        }
+    }
+#endif 
 
     autoPtr<mapDistribute> mapPtr
     (
