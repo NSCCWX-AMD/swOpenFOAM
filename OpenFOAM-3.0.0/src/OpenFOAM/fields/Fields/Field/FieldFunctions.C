@@ -622,12 +622,109 @@ BINARY_TYPE_FUNCTION(Type, Type, Type, cmptDivide)
 
 UNARY_OPERATOR(Type, Type, -, negate)
 
+// for sw
+//BINARY_OPERATOR_SW(scalar, scalar, scalar, *, multiply)
+                                                                   
+tmp<Field<scalar> > operator *                                           
+(                                                                             
+    const UList<scalar>& f1,                                                  
+    const UList<scalar>& f2                                                    
+)                                                                             
+{                                                                             
+    tmp<Field<scalar> > tRes(new Field<scalar>(f1.size()));           
+    multiply(tRes(), f1, f2);                                                   
+    return tRes;                                                              
+}                                                                             
+                                                                              
+tmp<Field<scalar> > operator *                                           
+(                                                                             
+    const UList<scalar>& f1,                                                   
+    const tmp<Field<scalar> >& tf2                                             
+)                                                                             
+{                                                                             
+    tmp<Field<scalar> > tRes = reuseTmp<scalar, scalar>::New(tf2);     
+    multiply(tRes(), f1, tf2());                                                
+    reuseTmp<scalar, scalar>::clear(tf2);                                  
+    return tRes;                                                              
+}                                                                             
+                                                                              
+tmp<Field<scalar> > operator *                                           
+(                                                                             
+    const tmp<Field<scalar> >& tf1,                                            
+    const UList<scalar>& f2                                                    
+)                                                                             
+{                                                                             
+    tmp<Field<scalar> > tRes = reuseTmp<scalar, scalar>::New(tf1);     
+    multiply(tRes(), tf1(), f2);                                                
+    reuseTmp<scalar, scalar>::clear(tf1);                                  
+    return tRes;                                                              
+}                                                                             
+                                                                               
+tmp<Field<scalar> > operator *                                           
+(                                                                             
+    const tmp<Field<scalar> >& tf1,                                            
+    const tmp<Field<scalar> >& tf2                                             
+)                                                                             
+{                                                                             
+    tmp<Field<scalar> > tRes =                                            
+        reuseTmpTmp<scalar, scalar, scalar, scalar>::New(tf1, tf2);          
+    multiply(tRes(), tf1(), tf2());                                             
+    reuseTmpTmp<scalar, scalar, scalar, scalar>::clear(tf1, tf2);            
+    return tRes;                                                              
+}
+
+tmp<Field<scalar> > operator /                                           
+(                                                                             
+    const UList<scalar>& f1,                                                  
+    const UList<scalar>& f2                                                    
+)                                                                             
+{                                                                             
+    tmp<Field<scalar> > tRes(new Field<scalar>(f1.size()));           
+    divide(tRes(), f1, f2);                                                   
+    return tRes;                                                              
+}                                                                             
+                                                                              
+tmp<Field<scalar> > operator /                                           
+(                                                                             
+    const UList<scalar>& f1,                                                   
+    const tmp<Field<scalar> >& tf2                                             
+)                                                                             
+{                                                                             
+    tmp<Field<scalar> > tRes = reuseTmp<scalar, scalar>::New(tf2);     
+    divide(tRes(), f1, tf2());                                                
+    reuseTmp<scalar, scalar>::clear(tf2);                                  
+    return tRes;                                                              
+}                                                                             
+                                                                              
+tmp<Field<scalar> > operator /                                           
+(                                                                             
+    const tmp<Field<scalar> >& tf1,                                            
+    const UList<scalar>& f2                                                    
+)                                                                             
+{                                                                             
+    tmp<Field<scalar> > tRes = reuseTmp<scalar, scalar>::New(tf1);     
+    divide(tRes(), tf1(), f2);                                                
+    reuseTmp<scalar, scalar>::clear(tf1);                                  
+    return tRes;                                                              
+}                                                                             
+                                                                               
+tmp<Field<scalar> > operator /                                           
+(                                                                             
+    const tmp<Field<scalar> >& tf1,                                            
+    const tmp<Field<scalar> >& tf2                                             
+)                                                                             
+{                                                                             
+    tmp<Field<scalar> > tRes =                                            
+        reuseTmpTmp<scalar, scalar, scalar, scalar>::New(tf1, tf2);          
+    divide(tRes(), tf1(), tf2());                                             
+    reuseTmpTmp<scalar, scalar, scalar, scalar>::clear(tf1, tf2);            
+    return tRes;                                                              
+}
+
 BINARY_OPERATOR(Type, Type, scalar, *, multiply)
 BINARY_OPERATOR(Type, scalar, Type, *, multiply)
 BINARY_OPERATOR(Type, Type, scalar, /, divide)
 
-// for sw
-//BINARY_OPERATOR_SW(scalar, scalar, scalar, *, multiply)
 
 BINARY_TYPE_OPERATOR_SF(Type, scalar, Type, *, multiply)
 BINARY_TYPE_OPERATOR_FS(Type, Type, scalar, *, multiply)

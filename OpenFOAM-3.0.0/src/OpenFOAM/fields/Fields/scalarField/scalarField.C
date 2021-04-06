@@ -110,8 +110,8 @@ scalar sumProd(const UList<scalar>& f1, const UList<scalar>& f2)
 BINARY_TYPE_OPERATOR(scalar, scalar, scalar, +, add)
 BINARY_TYPE_OPERATOR(scalar, scalar, scalar, -, subtract)
 
-BINARY_OPERATOR(scalar, scalar, scalar, *, multiply)
-BINARY_OPERATOR(scalar, scalar, scalar, /, divide)
+//BINARY_OPERATOR(scalar, scalar, scalar, *, multiply)
+//BINARY_OPERATOR(scalar, scalar, scalar, /, divide)
 
 BINARY_TYPE_OPERATOR_SF(scalar, scalar, scalar, /, divide)
 

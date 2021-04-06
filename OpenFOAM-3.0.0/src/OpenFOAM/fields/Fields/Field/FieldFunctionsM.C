@@ -245,7 +245,7 @@ tmp<Field<ReturnType> > Func                                                  \
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-#define BINARY_OPERATOR_SW(ReturnType, Type1, Type2, Op, OpFunc)              \
+/*#define BINARY_OPERATOR_SW(ReturnType, Type1, Type2, Op, OpFunc)              \
                                                                               \
 template <>                                                                   \
 tmp<Field<ReturnType> > operator Op                                           \
@@ -297,7 +297,7 @@ tmp<Field<ReturnType> > operator Op                                           \
     OpFunc(tRes(), tf1(), tf2());                                             \
     reuseTmpTmp<ReturnType, Type1, Type1, Type2>::clear(tf1, tf2);            \
     return tRes;                                                              \
-}
+}*/
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

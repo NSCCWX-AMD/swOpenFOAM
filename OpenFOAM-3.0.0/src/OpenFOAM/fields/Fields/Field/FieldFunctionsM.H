@@ -153,7 +153,7 @@ tmp<Field<ReturnType> > Func                                                  \
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 // for sw
-#define BINARY_OPERATOR_SW(ReturnType, Type1, Type2, Op, OpFunc)              \
+/*#define BINARY_OPERATOR_SW(ReturnType, Type1, Type2, Op, OpFunc)              \
                                                                               \
 template <>                                                                   \
 tmp<Field<ReturnType> > operator Op                                           \
@@ -181,7 +181,7 @@ tmp<Field<ReturnType> > operator Op                                           \
 (                                                                             \
     const tmp<Field<Type1> >& tf1,                                            \
     const tmp<Field<Type2> >& tf2                                             \
-);
+);*/
 
 
 #define BINARY_OPERATOR(ReturnType, Type1, Type2, Op, OpFunc)                 \

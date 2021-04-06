@@ -269,12 +269,61 @@ BINARY_TYPE_FUNCTION(Type, Type, Type, cmptDivide)
 
 UNARY_OPERATOR(Type, Type, -, negate)
 
+// for sw
+//BINARY_OPERATOR_SW(scalar, scalar, scalar, *, multiply)
+                                                                   
+tmp<Field<scalar> > operator *                                           
+(                                                                             
+    const UList<scalar>& f1,                                                  
+    const UList<scalar>& f2                                                    
+) ;                                                                            
+                                                                              
+tmp<Field<scalar> > operator *                                           
+(                                                                             
+    const UList<scalar>& f1,                                                   
+    const tmp<Field<scalar> >& tf2                                             
+)   ;                                                                           
+                                                                              
+tmp<Field<scalar> > operator *                                           
+(                                                                             
+    const tmp<Field<scalar> >& tf1,                                            
+    const UList<scalar>& f2                                                    
+);                                                                            
+                                                                               
+tmp<Field<scalar> > operator *                                           
+(                                                                             
+    const tmp<Field<scalar> >& tf1,                                            
+    const tmp<Field<scalar> >& tf2                                             
+);
+
+tmp<Field<scalar> > operator /                                           
+(                                                                             
+    const UList<scalar>& f1,                                                  
+    const UList<scalar>& f2                                                    
+) ;                                                                            
+                                                                              
+tmp<Field<scalar> > operator /                                           
+(                                                                             
+    const UList<scalar>& f1,                                                   
+    const tmp<Field<scalar> >& tf2                                             
+)   ;                                                                           
+                                                                              
+tmp<Field<scalar> > operator /                                           
+(                                                                             
+    const tmp<Field<scalar> >& tf1,                                            
+    const UList<scalar>& f2                                                    
+);                                                                            
+                                                                               
+tmp<Field<scalar> > operator /                                           
+(                                                                             
+    const tmp<Field<scalar> >& tf1,                                            
+    const tmp<Field<scalar> >& tf2                                             
+);
+
+
 BINARY_OPERATOR(Type, Type, scalar, *, multiply)
 BINARY_OPERATOR(Type, scalar, Type, *, multiply)
 BINARY_OPERATOR(Type, Type, scalar, /, divide)
-
-// for sw
-//BINARY_OPERATOR_SW(scalar, scalar, scalar, *, multiply)
 
 BINARY_TYPE_OPERATOR_SF(Type, scalar, Type, *, multiply)
 BINARY_TYPE_OPERATOR_FS(Type, Type, scalar, *, multiply)
