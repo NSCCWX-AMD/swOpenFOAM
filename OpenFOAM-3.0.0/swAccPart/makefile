@@ -6,7 +6,7 @@ default:
 all:
 	@cd performance/slaveUtils && make default
 	@cd performance/CG_switch &&  make default
-	#@cd performance/timers &&  make default
+	@cd performance/timers &&  make default
 #	////@cd performance/rowSubsections && make default
 #	////@cd performance/BlockOrdering && make default
 #	////@cd performance/extensibleArray && make default
@@ -21,7 +21,7 @@ all:
 	@cd swDILUPreconditioner && make default
 	@cd srPCG && make default
 	@cd swScalarFieldOps && make default
-	#@cd swField && make default
+	@cd swField && make default
 #   ////@cd swGaussGrad && make default
 ##	////@cd swSurfaceIntegrate &&  make default
 #   ////@cd swSurfaceInterpolationScheme &&  make default
@@ -32,7 +32,7 @@ all:
 cleanAll:
 	@cd performance/slaveUtils && make cleanObjs
 	@cd performance/CG_switch &&  make cleanObjs
-	#@cd performance/timers &&  make cleanObjs
+	@cd performance/timers &&  make cleanObjs
 	#@cd performance/rowSubsections && make cleanObjs
 	#@cd performance/BlockOrdering && make cleanObjs
 	#@cd performance/extensibleArray && make cleanObjs
@@ -46,7 +46,7 @@ cleanAll:
 	@cd swDILUPreconditioner && make cleanObjs
 	@cd srPCG && make cleanObjs
 	@cd swScalarFieldOps && make cleanObjs
-	#@cd swField && make cleanObjs
+	@cd swField && make cleanObjs
 	#@cd swGaussGrad && make cleanObjs
 	#@cd swSurfaceIntegrate &&  make cleanObjs
 	#@cd swSurfaceInterpolationScheme &&  make cleanObjs

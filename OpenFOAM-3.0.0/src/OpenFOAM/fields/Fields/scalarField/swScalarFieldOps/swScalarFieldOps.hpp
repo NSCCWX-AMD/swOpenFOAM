@@ -30,6 +30,7 @@ Description
 namespace Foam
 {
 
+//template <>
 void multiply(Field<scalar>&, const UList<scalar>&, const UList<scalar>&);
 
 void divide(Field<scalar>&, const UList<scalar>&, const UList<scalar>&);

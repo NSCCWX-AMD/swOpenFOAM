@@ -3,7 +3,7 @@
 #include "swField_host.h"
 
 #if(SWTIMER)
-//#include "Timers.hpp"
+#include "Timer.hpp"
 #endif
 
 
@@ -26,7 +26,7 @@ void dot <vector, tensor>
 
     label i = (res).size();
 
-#if 1
+#if 0
 {
     printf("swField vector dot tensor call\n");
     printf("i=%ld\n", i);
@@ -37,6 +37,8 @@ void dot <vector, tensor>
     swVectorDotTensor data;
 
     if (i > 2000) {
+
+
         data.size = i;
         data.vector_dim = 3;
         data.tensor_dim = 9;
@@ -66,7 +68,7 @@ void dot(Field<typename innerProduct<vector, vector>::type>& res, const UList<ve
     label i = (res).size();
     swVectorDotTensor data;
 
-#if 1
+#if 0
 {
     printf("swField vector dot vector call\n");
     printf("i=%ld\n", i);
@@ -75,6 +77,10 @@ void dot(Field<typename innerProduct<vector, vector>::type>& res, const UList<ve
 #endif
 
     if (i > 2000) {
+
+#if(SWTIMER)
+swTimer::startTimer("dot");
+#endif
         data.size = i;
         data.vector_dim = 3;
 
@@ -83,6 +89,13 @@ void dot(Field<typename innerProduct<vector, vector>::type>& res, const UList<ve
         data.f3P = (scalar*) f3P;
 
         call_swVectorDotVector_slave(&data);
+        /*while (i--) {
+            (*f1P++) = (*f2P++) & (*f3P++);
+        }*/
+
+#if(SWTIMER)
+swTimer::endTimer("dot");
+#endif
 
     } else {
         while (i--) {

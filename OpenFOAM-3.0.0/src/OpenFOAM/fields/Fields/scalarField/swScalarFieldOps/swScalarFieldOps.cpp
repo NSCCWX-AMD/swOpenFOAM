@@ -44,10 +44,10 @@ void multiply
     const scalar* __restrict__ f3P = (f2).begin();
     label i = (res).size();
 
-#if 1
+#if 0
 {
     printf("swScalarFieldOps multiply ncall\n");
-    printf("accUsingSize=%d\n", accUsingSize);
+    printf("accUsingSize=%d, i=%ld\n", accUsingSize, i);
     std::exit(0);
 }
 #endif
@@ -55,7 +55,7 @@ void multiply
     // test the slave function
     if(i > accUsingSize)
     {
-#if 1
+#if 0
 {
     static int ncall = 0;
     ncall++;
@@ -95,7 +95,7 @@ void divide
     const scalar* __restrict__ f3P = (f2).begin();
     label i = (res).size();
 
-#if 1
+#if 0
 {
     printf("swScalarFieldOps divide ncall\n");
     printf("accUsingSize=%d\n", accUsingSize);
