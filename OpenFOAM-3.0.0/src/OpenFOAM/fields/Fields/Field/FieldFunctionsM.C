@@ -246,8 +246,8 @@ tmp<Field<ReturnType> > Func                                                  \
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #define BINARY_OPERATOR_SW(ReturnType, Type1, Type2, Op, OpFunc)              \
-                                                                             \
-TEMPLATE                                                                     \
+                                                                              \
+template <>                                                                   \
 tmp<Field<ReturnType> > operator Op                                           \
 (                                                                             \
     const UList<Type1>& f1,                                                   \
@@ -259,7 +259,7 @@ tmp<Field<ReturnType> > operator Op                                           \
     return tRes;                                                              \
 }                                                                             \
                                                                               \
-TEMPLATE                                                                      \
+template <>                                                                   \
 tmp<Field<ReturnType> > operator Op                                           \
 (                                                                             \
     const UList<Type1>& f1,                                                   \
@@ -272,7 +272,7 @@ tmp<Field<ReturnType> > operator Op                                           \
     return tRes;                                                              \
 }                                                                             \
                                                                               \
-TEMPLATE                                                                      \
+template <>                                                                   \
 tmp<Field<ReturnType> > operator Op                                           \
 (                                                                             \
     const tmp<Field<Type1> >& tf1,                                            \
@@ -285,7 +285,7 @@ tmp<Field<ReturnType> > operator Op                                           \
     return tRes;                                                              \
 }                                                                             \
                                                                               \
-TEMPLATE                                                                      \
+template <>                                                                   \
 tmp<Field<ReturnType> > operator Op                                           \
 (                                                                             \
     const tmp<Field<Type1> >& tf1,                                            \
