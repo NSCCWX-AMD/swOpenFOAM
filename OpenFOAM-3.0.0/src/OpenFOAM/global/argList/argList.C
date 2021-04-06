@@ -578,6 +578,7 @@ void Foam::argList::parse
     // If this actually is a parallel run
     if (parRunControl_.parRun())
     {
+        PstreamBuffers pBufs(Pstream::nonBlocking);
         // For the master
         if (Pstream::master())
         {
@@ -736,15 +737,19 @@ void Foam::argList::parse
                     slave++
                 )
                 {
-                    OPstream toSlave(Pstream::scheduled, slave);
+                    // OPstream toSlave(Pstream::scheduled, slave);
+                    UOPstream toSlave(slave, pBufs);
                     toSlave << args_ << options_;
                 }
+                pBufs.finishedSends();
             }
         }
         else
         {
             // Collect the master's argument list
-            IPstream fromMaster(Pstream::scheduled, Pstream::masterNo());
+            // IPstream fromMaster(Pstream::scheduled, Pstream::masterNo());
+            pBufs.finishedSends();
+            UIPstream fromMaster(Pstream::masterNo(), pBufs);
             fromMaster >> args_ >> options_;
 
             // establish rootPath_/globalCase_/case_ for slave
@@ -764,6 +769,7 @@ void Foam::argList::parse
 
     stringList slaveProcs;
 
+#if 0
     // collect slave machine/pid
     if (parRunControl_.parRun())
     {
@@ -793,6 +799,7 @@ void Foam::argList::parse
             toMaster << hostName() << pid();
         }
     }
+#endif
 
 
     if (Pstream::master() && bannerEnabled)
