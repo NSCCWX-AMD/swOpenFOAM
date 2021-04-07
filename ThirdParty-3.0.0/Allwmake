@@ -354,7 +354,7 @@ then
     (
         set -x
         cd $METIS_VERSION  || exit 1
-        make config shared=0 cc=swgcc prefix=$METIS_ARCH_PATH
+        make config shared=0 cc=mpicc  prefix=$METIS_ARCH_PATH
         make -j $WM_NCOMPPROCS install
         cp $METIS_ARCH_PATH/lib/libmetis.a $FOAM_EXT_LIBBIN
     )

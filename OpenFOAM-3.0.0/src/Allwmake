@@ -40,8 +40,8 @@ wmake $targetType edgeMesh
 
 # Decomposition methods needed by dummyThirdParty
 # (dummy metisDecomp, scotchDecomp etc) needed by e.g. meshTools
-#parallel/decompose/AllwmakeLnInclude
-#dummyThirdParty/Allwmake $targetType $*
+parallel/decompose/AllwmakeLnInclude
+dummyThirdParty/Allwmake $targetType $*
 
 wmake $targetType finiteVolume
 wmake $targetType lagrangian/basic
@@ -56,7 +56,7 @@ wmake $targetType dynamicFvMesh
 wmake $targetType topoChangerFvMesh
 
 # Compile scotchDecomp, metisDecomp etc.
-#parallel/Allwmake $targetType $*
+parallel/Allwmake $targetType $*
 
 wmake $targetType ODE
 wmake $targetType randomProcesses
@@ -67,8 +67,8 @@ TurbulenceModels/Allwmake $targetType $*
 wmake $targetType combustionModels
 regionModels/Allwmake $targetType $*
 lagrangian/Allwmake $targetType $*
-#mesh/Allwmake $targetType $*
-#renumber/Allwmake $targetType $*
+mesh/Allwmake $targetType $*
+renumber/Allwmake $targetType $*
 fvAgglomerationMethods/Allwmake $targetType $*
 
 wmake $targetType fvMotionSolver
@@ -78,7 +78,6 @@ wmake $targetType regionCoupled
 
 postProcessing/Allwmake $targetType $*
 
-#wmake $targetType sixDoFRigidBodyMotion
-
+wmake $targetType sixDoFRigidBodyMotion
 
 # ----------------------------------------------------------------- end-of-file

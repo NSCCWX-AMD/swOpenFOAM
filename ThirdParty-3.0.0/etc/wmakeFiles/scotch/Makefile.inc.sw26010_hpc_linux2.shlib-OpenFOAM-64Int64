@@ -14,7 +14,7 @@ CCP		= mpicc
 CCD		= $(WM_CC) -I/usr/sw-mpp/mpi2/include/
 #CFLAGS		= -O3 -fPIC -DINTSIZE64 -DCOMMON_FILE_COMPRESS_GZ -DCOMMON_RANDOM_FIXED_SEED -DSCOTCH_RENAME -Drestrict=__restrict
 CFLAGS		= -O3 -fPIC -DINTSIZE64 -DCOMMON_FILE_COMPRESS_GZ -DCOMMON_RANDOM_FIXED_SEED -DSCOTCH_RENAME -Drestrict=__restrict
-CLIBFLAGS	= -shared -fPIC
+CLIBFLAGS	= -static -fPIC
 #LDFLAGS		= -Xlinker --no-as-needed -lz -lm -lrt
 LDFLAGS		= -lz -lm -lrt
 CP		= cp

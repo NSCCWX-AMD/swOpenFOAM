@@ -1,0 +1,5 @@
+source etc/bashrc
+
+module load sw/compiler/gcc710
+
+export WM_NCOMPPROCS=8

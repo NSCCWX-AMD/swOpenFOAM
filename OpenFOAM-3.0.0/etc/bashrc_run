@@ -48,7 +48,7 @@ export WM_PROJECT_VERSION=3.0.0
 # otherwise out-of-tree compilation fails and exes cannot be found correctly
 ## for compiling
 #foamInstall=/home/export/online3/amd_share/OpenFOAM_SW/swOpenFOAM_master
-foamInstall=/home/export/base/nsccwuxi_amd/amd_dev1/amd_share/OpenFOAM_SW/swOpenFOAM_master_710_new/swOpenFOAM_master
+foamInstall=/home/export/online3/amd_share/OpenFOAM_SW/swOpenFOAM_master_710_new/swOpenFOAM_master
 ## for running
 ##foamInstall=/home/export/online3/amd_share/OpenFOAM_SW
 
